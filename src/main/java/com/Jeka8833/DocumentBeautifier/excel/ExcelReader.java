@@ -13,8 +13,10 @@ import java.util.Collection;
 public class ExcelReader {
 
     private final Workbook workbook;
+    private final Path inputFile;
 
     public ExcelReader(Path file) throws IOException {
+        inputFile = file;
         String fileName = file.getFileName().toString().toLowerCase();
         if (fileName.startsWith("~$"))
             throw new IllegalArgumentException("The file '" + file.getFileName() + "' is a backup file.");
@@ -39,7 +41,7 @@ public class ExcelReader {
         int sheetCount = workbook.getNumberOfSheets();
         var sheets = new SheetDetailed[sheetCount];
         for (int i = 0; i < sheetCount; i++) {
-            var sheetDetailed = new SheetDetailed(workbook.getSheetAt(i), workbook);
+            var sheetDetailed = new SheetDetailed(workbook.getSheetAt(i), this);
             sheetDetailed.readColumnNames(mods);
 
             sheets[i] = sheetDetailed;
@@ -50,5 +52,13 @@ public class ExcelReader {
     public void save(Path file) throws IOException {
         workbook.write(Files.newOutputStream(file));
         workbook.close();
+    }
+
+    public Workbook getWorkbook() {
+        return workbook;
+    }
+
+    public Path getInputFile() {
+        return inputFile;
     }
 }

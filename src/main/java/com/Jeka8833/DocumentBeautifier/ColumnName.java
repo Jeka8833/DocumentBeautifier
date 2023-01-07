@@ -1,27 +1,29 @@
 package com.Jeka8833.DocumentBeautifier;
 
-import java.util.Objects;
+import org.jetbrains.annotations.NotNull;
 
 public class ColumnName implements Cloneable {
 
-    private final String columnIndex;
-    private final String name;
+    private final @NotNull String columnIndex;
+    private final @NotNull String name;
     private int posX;
 
-    public ColumnName(String columnIndex, String name) {
+    public ColumnName(@NotNull String columnIndex, @NotNull String name) {
         this(columnIndex, name, Integer.MIN_VALUE);
     }
 
-    public ColumnName(String columnIndex, String name, int posX) {
+    public ColumnName(@NotNull String columnIndex, @NotNull String name, int posX) {
         this.columnIndex = columnIndex;
         this.name = name;
         this.posX = posX;
     }
 
+    @NotNull
     public String getColumnIndex() {
         return columnIndex;
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
@@ -41,12 +43,12 @@ public class ColumnName implements Cloneable {
 
         ColumnName that = (ColumnName) o;
 
-        return Objects.equals(columnIndex, that.columnIndex);
+        return columnIndex.equals(that.columnIndex);
     }
 
     @Override
     public int hashCode() {
-        return columnIndex != null ? columnIndex.hashCode() : 0;
+        return columnIndex.hashCode();
     }
 
     @Override

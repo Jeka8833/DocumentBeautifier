@@ -10,14 +10,14 @@ import java.util.*;
 public class SheetDetailed {
 
     private final Sheet sheet;
-    private final Workbook workbook;
+    private final ExcelReader reader;
     private final MySet<ColumnName> columnNames = new MySet<>();
 
     private int startPosY = 0;
 
-    public SheetDetailed(Sheet sheet, Workbook workbook) {
+    public SheetDetailed(Sheet sheet, ExcelReader reader) {
         this.sheet = sheet;
-        this.workbook = workbook;
+        this.reader = reader;
     }
 
     public Sheet getSheet() {
@@ -71,8 +71,8 @@ public class SheetDetailed {
         return startPosY;
     }
 
-    public Workbook getWorkbook() {
-        return workbook;
+    public ExcelReader getReader() {
+        return reader;
     }
 
     private CellStyle dateStyle;
@@ -80,8 +80,8 @@ public class SheetDetailed {
     public CellStyle dateStyle() {
         if (dateStyle != null) return dateStyle;
 
-        dateStyle = workbook.createCellStyle();
-        dateStyle.setDataFormat(workbook.getCreationHelper().createDataFormat().getFormat("dd.mm.yyyy"));
+        dateStyle = reader.getWorkbook().createCellStyle();
+        dateStyle.setDataFormat(reader.getWorkbook().getCreationHelper().createDataFormat().getFormat("dd.mm.yyyy"));
         return dateStyle;
     }
 
@@ -90,7 +90,7 @@ public class SheetDetailed {
     public CellStyle yellowColorStyle() {
         if (yellowColorStyle != null) return yellowColorStyle;
 
-        yellowColorStyle = workbook.createCellStyle();
+        yellowColorStyle = reader.getWorkbook().createCellStyle();
         yellowColorStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
         yellowColorStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         return yellowColorStyle;
@@ -101,7 +101,7 @@ public class SheetDetailed {
     public CellStyle redColorStyle() {
         if (redColorStyle != null) return redColorStyle;
 
-        redColorStyle = workbook.createCellStyle();
+        redColorStyle = reader.getWorkbook().createCellStyle();
         redColorStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
         redColorStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         return redColorStyle;

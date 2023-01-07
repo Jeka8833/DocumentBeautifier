@@ -16,20 +16,20 @@ import java.util.stream.Stream;
 
 public class IPNMod implements Mod {
 
-    private @Nullable ColumnName input = new ColumnName("IPN_IN", "IPN");
-    private @Nullable ColumnName output = new ColumnName("IPN_OUT", "IPN");
-    private @Nullable ColumnName dateOutput = new ColumnName("IPN_DATE_OUT", "IPN Date");
-    private @Nullable ColumnName genderOutput = new ColumnName("IPN_GENDER_OUT", "IPN Gender");
-    private @Nullable ColumnName ageOutput = new ColumnName("IPN_AGE_OUT", "IPN Age");
+    public @Nullable ColumnName input = new ColumnName("IPN_IN", "IPN");
+    public @Nullable ColumnName output = new ColumnName("IPN_OUT", "IPN");
+    public @Nullable ColumnName dateOutput = new ColumnName("IPN_DATE_OUT", "IPN Date");
+    public @Nullable ColumnName genderOutput = new ColumnName("IPN_GENDER_OUT", "IPN Gender");
+    public @Nullable ColumnName ageOutput = new ColumnName("IPN_AGE_OUT", "IPN Age");
 
-    private LocalDate minDate = LocalDate.now().minusYears(125);
-    private LocalDate maxDate = LocalDate.now().minusDays(1);
+    public @Nullable LocalDate minDate = LocalDate.now().minusYears(125);
+    public @Nullable LocalDate maxDate = LocalDate.now().minusDays(1);
 
-    private String male = "Male";
-    private String female = "Female";
+    public @Nullable String male = "Male";
+    public @Nullable String female = "Female";
 
-    private boolean printFormattingWarning = true;
-    private boolean printIPNError = true;
+    public boolean printFormattingWarning = true;
+    public boolean printIPNError = true;
 
     @Override
     public ColumnName[] getNeededColumn() {
@@ -85,7 +85,8 @@ public class IPNMod implements Mod {
             if (sheet.getColumnNames().contains(genderOutput)) {
                 boolean isMale = number[8] % 2 != 0;
                 int poxX = sheet.getColumnNames().get(genderOutput).getPosX();
-                ExcelCell.writeCell(cell.getRow(), poxX, isMale ? male : female);
+                ExcelCell.writeCell(cell.getRow(), poxX,
+                        isMale ? (male == null ? "" : male) : (female == null ? "" : female));
             }
 
             if (sheet.getColumnNames().contains(ageOutput)) {

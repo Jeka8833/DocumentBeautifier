@@ -29,7 +29,10 @@ dependencies {
     implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '5.2.3'
 
     // https://mvnrepository.com/artifact/com.googlecode.libphonenumber/libphonenumber
-    implementation group: 'com.googlecode.libphonenumber', name: 'libphonenumber', version: '8.13.3'
+    implementation group: 'com.googlecode.libphonenumber', name: 'libphonenumber', version: '8.13.+'
+
+    // https://mvnrepository.com/artifact/com.googlecode.libphonenumber/carrier
+    implementation group: 'com.googlecode.libphonenumber', name: 'carrier', version: '1.+'
 
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'

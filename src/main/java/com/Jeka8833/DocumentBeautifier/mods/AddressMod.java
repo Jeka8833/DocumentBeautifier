@@ -9,9 +9,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class NameMod implements Mod {
-    public @Nullable ColumnName input = new ColumnName("NAME_IN", "Name");
-    public @Nullable ColumnName output = new ColumnName("NAME_OUT", "Name");
+public class AddressMod implements Mod {
+    public @Nullable ColumnName input = new ColumnName("ADDRESS_IN", "Address");
+    public @Nullable ColumnName output = new ColumnName("ADDRESS_OUT", "Address");
 
     public boolean printFormattingWarning = true;
 
@@ -50,12 +50,48 @@ public class NameMod implements Mod {
                 .toLowerCase();
 
         if (text.isEmpty()) return "";
-        String[] partName = text.split("[.,\\s-]+");
-        for (int i = 0; i < partName.length; i++) {
+
+        String[] partName = text.split("[.,\\s]+");
+        StringBuilder stringBuilder = new StringBuilder(formatFirstPart(partName[0]));
+
+        int index = findIndexPart(partName);
+        for (int i = 1; i < partName.length; i++) {
             String part = partName[i];
-            partName[i] = Character.toUpperCase(part.charAt(0)) +
-                    (part.length() > 1 ? part.substring(1) : ".");
+            if (i > index) {
+                stringBuilder.append(part);
+            } else {
+                stringBuilder.append(Character.toUpperCase(part.charAt(0)))
+                        .append(part.length() > 1 ? part.substring(1) : ".");
+            }
+            if (index == i) {
+                stringBuilder.append(", ");
+            } else {
+                stringBuilder.append(' ');
+            }
         }
-        return String.join(" ", partName);
+
+        return stringBuilder.toString().stripTrailing();
+    }
+
+    private static String formatFirstPart(String text) {
+        return text.replaceAll("(ву|ул).*", "вул.")
+                .replaceAll("п.*", "пров.")
+                .replaceAll("(в`|в'|вї|вь|въ|в’).*", "в'їзд ")
+                .replaceAll("б.*", "б-р ")
+                .replaceAll("т.*", "тупик ");
+    }
+
+    private static int findIndexPart(String[] parts) {
+        for (int i = parts.length - 1; i > 0; i--) {
+            if (!hasNumber(parts[i])) return i;
+        }
+        return parts.length;
+    }
+
+    private static boolean hasNumber(String text) {
+        for (char c : text.toCharArray()) {
+            if (Character.isDigit(c) || c == '/') return true;
+        }
+        return false;
     }
 }
