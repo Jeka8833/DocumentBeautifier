@@ -10,6 +10,6 @@ public interface Mod {
 
     void process(SheetDetailed sheet, ColumnName column, Cell cell);
 
-    String formatText(SheetDetailed sheet, ColumnName column, Cell cell);
+    String formatText(ColumnName column, String text);
 
 }

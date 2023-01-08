@@ -8,6 +8,10 @@ public class ColumnName implements Cloneable {
     private final @NotNull String name;
     private int posX;
 
+    public ColumnName(@NotNull String columnIndex) {
+        this(columnIndex, "", Integer.MIN_VALUE);
+    }
+
     public ColumnName(@NotNull String columnIndex, @NotNull String name) {
         this(columnIndex, name, Integer.MIN_VALUE);
     }

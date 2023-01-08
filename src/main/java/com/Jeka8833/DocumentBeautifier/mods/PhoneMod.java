@@ -43,7 +43,7 @@ public class PhoneMod implements Mod {
     @Override
     public void process(SheetDetailed sheet, ColumnName column, Cell cell) {
         if (column.equals(input)) {
-            String text = formatText(sheet, column, cell);
+            String text = formatText(column, ExcelCell.getText(cell));
             if (text.isEmpty()) return;
             try {
                 Phonenumber.PhoneNumber swissNumberProto = PHONE_UTIL.parse(text, region);
@@ -79,8 +79,9 @@ public class PhoneMod implements Mod {
     }
 
     @Override
-    public String formatText(SheetDetailed sheet, ColumnName column, Cell cell) {
-        String text = ExcelCell.getText(cell).replaceAll("\\D", "");
+    public String formatText(ColumnName column, String text) {
+        if(!column.equals(input)) return text;
+        text = text.replaceAll("\\D", "");
         if (text.isEmpty()) return "";
 
         try {

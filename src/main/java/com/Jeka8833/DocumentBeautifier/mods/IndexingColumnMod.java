@@ -1,7 +1,6 @@
 package com.Jeka8833.DocumentBeautifier.mods;
 
 import com.Jeka8833.DocumentBeautifier.ColumnName;
-import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
 import org.apache.poi.ss.usermodel.Cell;
 
@@ -23,7 +22,7 @@ public class IndexingColumnMod implements Mod {
     }
 
     @Override
-    public String formatText(SheetDetailed sheet, ColumnName column, Cell cell) {
-        return ExcelCell.getText(cell);
+    public String formatText(ColumnName column, String text) {
+        return text;
     }
 }

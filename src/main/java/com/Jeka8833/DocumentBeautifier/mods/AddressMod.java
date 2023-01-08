@@ -28,7 +28,7 @@ public class AddressMod implements Mod {
     @Override
     public void process(SheetDetailed sheet, ColumnName column, Cell cell) {
         if (column.equals(input)) {
-            String text = formatText(sheet, column, cell);
+            String text = formatText(column, ExcelCell.getText(cell));
             if (text.isEmpty()) return;
 
             if (sheet.getColumnNames().contains(output)) {
@@ -44,9 +44,9 @@ public class AddressMod implements Mod {
     }
 
     @Override
-    public String formatText(SheetDetailed sheet, ColumnName column, Cell cell) {
-        String text = ExcelCell.getText(cell)
-                .strip().replaceAll(" {2,}", " ")
+    public String formatText(ColumnName column, String text) {
+        if(!column.equals(input)) return text;
+        text = text.strip().replaceAll(" {2,}", " ")
                 .toLowerCase();
 
         if (text.isEmpty()) return "";

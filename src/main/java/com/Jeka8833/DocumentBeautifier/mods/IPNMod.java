@@ -44,7 +44,7 @@ public class IPNMod implements Mod {
     @Override
     public void process(SheetDetailed sheet, ColumnName column, Cell cell) {
         if (column.equals(input)) {
-            String text = formatText(sheet, column, cell);
+            String text = formatText(column, ExcelCell.getText(cell));
             if (text.isEmpty()) return;
 
             if (text.length() != 10) {
@@ -99,7 +99,8 @@ public class IPNMod implements Mod {
     }
 
     @Override
-    public String formatText(SheetDetailed sheet, ColumnName column, Cell cell) {
-        return ExcelCell.getText(cell).replaceAll("\\D", "");
+    public String formatText(ColumnName column, String text) {
+        if(!column.equals(input)) return text;
+        return text.replaceAll("\\D", "");
     }
 }

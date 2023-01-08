@@ -3,6 +3,7 @@ package com.Jeka8833.DocumentBeautifier.mods;
 import com.Jeka8833.DocumentBeautifier.ColumnName;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
+import com.Jeka8833.DocumentBeautifier.util.LevenshteinDistance;
 import org.apache.poi.ss.usermodel.Cell;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,7 +29,7 @@ public class NameMod implements Mod {
     @Override
     public void process(SheetDetailed sheet, ColumnName column, Cell cell) {
         if (column.equals(input)) {
-            String text = formatText(sheet, column, cell);
+            String text = formatText(column, ExcelCell.getText(cell));
             if (text.isEmpty()) return;
 
             if (sheet.getColumnNames().contains(output)) {
@@ -44,18 +45,37 @@ public class NameMod implements Mod {
     }
 
     @Override
-    public String formatText(SheetDetailed sheet, ColumnName column, Cell cell) {
-        String text = ExcelCell.getText(cell)
-                .strip().replaceAll(" {2,}", " ")
+    public String formatText(ColumnName column, String text) {
+        if(!column.equals(input)) return text;
+        text = text.strip().replaceAll(" {2,}", " ")
                 .toLowerCase();
 
         if (text.isEmpty()) return "";
-        String[] partName = text.split("[.,\\s-]+");
+        String[] partName = text.split("[.,\\s]+");
         for (int i = 0; i < partName.length; i++) {
             String part = partName[i];
             partName[i] = Character.toUpperCase(part.charAt(0)) +
                     (part.length() > 1 ? part.substring(1) : ".");
         }
         return String.join(" ", partName);
+    }
+
+    public static boolean compareName(String name1, String name2, int mistakes) {
+        String[] name1Array = name1.split("[.,\\s]+");
+        String[] name2Array = name2.split("[.,\\s]+");
+
+        if (name1Array.length != name2Array.length) return false;
+
+        for (int i = 0; i < name1Array.length; i++) {
+            if (name1Array[i].length() == 1 || name2Array[i].length() == 1) {
+                if (Character.toLowerCase(name1Array[i].charAt(0)) != Character.toLowerCase(name2Array[i].charAt(0)))
+                    return false;
+            } else {
+                int value = LevenshteinDistance.limitedCompare(name1Array[i], name2Array[i], mistakes);
+                if (value == -1) return false;
+                mistakes -= value;
+            }
+        }
+        return true;
     }
 }
