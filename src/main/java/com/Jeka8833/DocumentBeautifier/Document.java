@@ -4,7 +4,7 @@ import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelReader;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
 import com.Jeka8833.DocumentBeautifier.mods.Mod;
-import com.Jeka8833.DocumentBeautifier.mods.search.SearchDB;
+import com.Jeka8833.DocumentBeautifier.search.SearchDB;
 import com.Jeka8833.DocumentBeautifier.util.MySet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,12 +52,10 @@ public class Document {
                     fileStream.filter(Files::isRegularFile)
                             .filter(Document::checkSupportFormat)
                             .forEach(path1 -> {
-                                if (checkSupportFormat(path1)) {
-                                    try {
-                                        processSearch(path1, searching, searchDB);
-                                    } catch (IOException e) {
-                                        logger.warn("Fail process file" + e);
-                                    }
+                                try {
+                                    processSearch(path1, searching, searchDB);
+                                } catch (Exception e) {
+                                    logger.warn("Fail process file" + e);
                                 }
                             });
                 }
@@ -65,7 +63,7 @@ public class Document {
                 if (checkSupportFormat(path)) {
                     try {
                         processSearch(path, searching, searchDB);
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         logger.warn("Fail process file" + e);
                     }
                 }
@@ -77,10 +75,11 @@ public class Document {
 
     public static boolean checkSupportFormat(@NotNull Path path) {
         String name = path.getFileName().toString().toLowerCase();
-        return name.endsWith(".xls") || name.endsWith(".xlsx");
+        return !name.startsWith("~$") && (name.endsWith(".xls") || name.endsWith(".xlsx"));
     }
 
     public ExcelReader processSearch(Path inputFile, MySet<ColumnName> searching, SearchDB searchDB) throws IOException {
+        logger.info("Search in file: " + inputFile);
         ExcelReader reader = new ExcelReader(inputFile);
         SheetDetailed[] sheets = reader.getSheetsWithNames(mods);
         for (SheetDetailed sheet : sheets) {

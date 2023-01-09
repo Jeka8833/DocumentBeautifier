@@ -13,7 +13,8 @@ public class MySet<K> extends HashMap<K, K> {
         addAll(collection);
     }
 
-    public MySet(K[] collection) {
+    @SafeVarargs
+    public MySet(K... collection) {
         addAll(collection);
     }
 

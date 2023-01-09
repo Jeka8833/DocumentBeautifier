@@ -28,25 +28,26 @@ public class NameMod implements Mod {
 
     @Override
     public void process(SheetDetailed sheet, ColumnName column, Cell cell) {
-        if (column.equals(input)) {
-            String text = formatText(column, ExcelCell.getText(cell));
-            if (text.isEmpty()) return;
+        if (!column.equals(input)) return;
 
-            if (sheet.getColumnNames().contains(output)) {
-                int poxX = sheet.getColumnNames().get(output).getPosX();
-                ExcelCell.writeCell(cell.getRow(), poxX, text);
-            }
+        String text = formatText(column, ExcelCell.getText(cell));
+        if (text.isEmpty()) return;
 
-            if (printFormattingWarning) {
-                String textWithoutFormatting = ExcelCell.getText(cell);
-                if (!text.equals(textWithoutFormatting)) cell.setCellStyle(sheet.yellowColorStyle());
-            }
+        if (sheet.getColumnNames().contains(output)) {
+            int poxX = sheet.getColumnNames().get(output).getPosX();
+            ExcelCell.writeCell(cell.getRow(), poxX, text);
+        }
+
+        if (printFormattingWarning) {
+            String textWithoutFormatting = ExcelCell.getText(cell);
+            if (!text.equals(textWithoutFormatting)) cell.setCellStyle(sheet.yellowColorStyle());
         }
     }
 
     @Override
     public String formatText(ColumnName column, String text) {
-        if(!column.equals(input)) return text;
+        if (!column.equals(input)) return text;
+
         text = text.strip().replaceAll(" {2,}", " ")
                 .toLowerCase();
 

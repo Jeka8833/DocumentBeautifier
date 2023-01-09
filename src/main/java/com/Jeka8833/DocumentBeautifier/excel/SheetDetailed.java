@@ -3,11 +3,15 @@ package com.Jeka8833.DocumentBeautifier.excel;
 import com.Jeka8833.DocumentBeautifier.ColumnName;
 import com.Jeka8833.DocumentBeautifier.mods.Mod;
 import com.Jeka8833.DocumentBeautifier.util.MySet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.*;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
 
 public class SheetDetailed {
+    private static final Logger logger = LogManager.getLogger(SheetDetailed.class);
 
     private final Sheet sheet;
     private final ExcelReader reader;
@@ -61,6 +65,8 @@ public class SheetDetailed {
                 }
             }
         }
+        if (!stop)
+            logger.warn("Sheet " + sheet.getSheetName() + " doesn't have header, file: " + reader.getInputFile());
     }
 
     public MySet<ColumnName> getColumnNames() {

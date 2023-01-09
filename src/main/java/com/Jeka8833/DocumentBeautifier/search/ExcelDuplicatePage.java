@@ -1,7 +1,7 @@
-package com.Jeka8833.DocumentBeautifier.excel;
+package com.Jeka8833.DocumentBeautifier.search;
 
 import com.Jeka8833.DocumentBeautifier.ColumnName;
-import com.Jeka8833.DocumentBeautifier.mods.search.SearchDB;
+import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
@@ -53,11 +53,15 @@ public class ExcelDuplicatePage {
                             ExcelCell.writeCell(row, columnPos++, "" + (rowData.getCell().getRowIndex() + 1));
                             for (ColumnName name : columnNames) {
                                 ColumnName columnNamePos = rowData.getSheet().getColumnNames().get(name);
-                                Cell cell = rowData.getSheet().getSheet()
-                                        .getRow(rowData.getCell().getRowIndex())
-                                        .getCell(columnNamePos.getPosX());
+                                if (columnNamePos == null) {
+                                    ExcelCell.writeCell(row, columnPos++, "");
+                                } else {
+                                    Cell cell = rowData.getSheet().getSheet()
+                                            .getRow(rowData.getCell().getRowIndex())
+                                            .getCell(columnNamePos.getPosX());
 
-                                ExcelCell.writeCell(row, columnPos++, ExcelCell.getText(cell));
+                                    ExcelCell.writeCell(row, columnPos++, ExcelCell.getText(cell));
+                                }
                             }
 
                             row = sheet.createRow(rowNumber++);

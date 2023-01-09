@@ -1,4 +1,4 @@
-package com.Jeka8833.DocumentBeautifier.mods.search;
+package com.Jeka8833.DocumentBeautifier.search;
 
 import com.Jeka8833.DocumentBeautifier.ColumnName;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;

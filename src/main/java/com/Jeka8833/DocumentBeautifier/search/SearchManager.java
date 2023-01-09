@@ -1,4 +1,4 @@
-package com.Jeka8833.DocumentBeautifier.mods.search;
+package com.Jeka8833.DocumentBeautifier.search;
 
 import java.nio.file.Path;
 import java.util.ArrayList;

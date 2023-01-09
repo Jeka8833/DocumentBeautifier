@@ -42,46 +42,47 @@ public class PhoneMod implements Mod {
 
     @Override
     public void process(SheetDetailed sheet, ColumnName column, Cell cell) {
-        if (column.equals(input)) {
-            String text = formatText(column, ExcelCell.getText(cell));
-            if (text.isEmpty()) return;
-            try {
-                Phonenumber.PhoneNumber swissNumberProto = PHONE_UTIL.parse(text, region);
+        if (!column.equals(input)) return;
 
-                if (sheet.getColumnNames().contains(output)) {
-                    int poxX = sheet.getColumnNames().get(output).getPosX();
-                    ExcelCell.writeCell(cell.getRow(), poxX, text);
-                }
+        String text = formatText(column, ExcelCell.getText(cell));
+        if (text.isEmpty()) return;
+        try {
+            Phonenumber.PhoneNumber swissNumberProto = PHONE_UTIL.parse(text, region);
 
-                if (printFormattingWarning) {
-                    String textWithoutFormatting = ExcelCell.getText(cell);
-                    if (!text.equals(textWithoutFormatting)) cell.setCellStyle(sheet.yellowColorStyle());
-                }
-
-                if (printPhoneError) {
-                    if (!PHONE_UTIL.isValidNumber(swissNumberProto)) cell.setCellStyle(sheet.redColorStyle());
-                }
-
-                if (sheet.getColumnNames().contains(typeOutput)) {
-                    int poxX = sheet.getColumnNames().get(typeOutput).getPosX();
-                    ExcelCell.writeCell(cell.getRow(), poxX, PHONE_UTIL.getNumberType(swissNumberProto).toString());
-                }
-
-                if (sheet.getColumnNames().contains(operatorOutput)) {
-                    int poxX = sheet.getColumnNames().get(operatorOutput).getPosX();
-                    ExcelCell.writeCell(cell.getRow(), poxX,
-                            CARRIER_MAPPER.getNameForNumber(swissNumberProto, Locale.ENGLISH));
-                }
-            } catch (NumberParseException ignored) {
-                if (printPhoneError) cell.setCellStyle(sheet.redColorStyle());
+            if (sheet.getColumnNames().contains(output)) {
+                int poxX = sheet.getColumnNames().get(output).getPosX();
+                ExcelCell.writeCell(cell.getRow(), poxX, text);
             }
+
+            if (printFormattingWarning) {
+                String textWithoutFormatting = ExcelCell.getText(cell);
+                if (!text.equals(textWithoutFormatting)) cell.setCellStyle(sheet.yellowColorStyle());
+            }
+
+            if (printPhoneError) {
+                if (!PHONE_UTIL.isValidNumber(swissNumberProto)) cell.setCellStyle(sheet.redColorStyle());
+            }
+
+            if (sheet.getColumnNames().contains(typeOutput)) {
+                int poxX = sheet.getColumnNames().get(typeOutput).getPosX();
+                ExcelCell.writeCell(cell.getRow(), poxX, PHONE_UTIL.getNumberType(swissNumberProto).toString());
+            }
+
+            if (sheet.getColumnNames().contains(operatorOutput)) {
+                int poxX = sheet.getColumnNames().get(operatorOutput).getPosX();
+                ExcelCell.writeCell(cell.getRow(), poxX,
+                        CARRIER_MAPPER.getNameForNumber(swissNumberProto, Locale.ENGLISH));
+            }
+        } catch (NumberParseException ignored) {
+            if (printPhoneError) cell.setCellStyle(sheet.redColorStyle());
         }
     }
 
     @Override
     public String formatText(ColumnName column, String text) {
-        if(!column.equals(input)) return text;
-        text = text.replaceAll("\\D", "");
+        if (!column.equals(input)) return text;
+
+        text = text.replaceAll("\\D+", "");
         if (text.isEmpty()) return "";
 
         try {
