@@ -34,48 +34,6 @@ public class SearchDB {
         return searchDB;
     }
 
-    public static class DBRow {
-        private final SheetDetailed sheet;
-        private final Cell cell;
-        private final String element;
-
-        public DBRow(SheetDetailed sheet, Cell cell, String element) {
-            this.sheet = sheet;
-            this.cell = cell;
-            this.element = element;
-        }
-
-        public SheetDetailed getSheet() {
-            return sheet;
-        }
-
-        public Cell getCell() {
-            return cell;
-        }
-
-        public String getElement() {
-            return element;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            DBRow row = (DBRow) o;
-
-            if (!sheet.equals(row.sheet)) return false;
-            if (!cell.equals(row.cell)) return false;
-            return element.equals(row.element);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = sheet.hashCode();
-            result = 31 * result + cell.hashCode();
-            result = 31 * result + element.hashCode();
-            return result;
-        }
+    public record DBRow(SheetDetailed sheet, Cell cell, String element) {
     }
-
 }

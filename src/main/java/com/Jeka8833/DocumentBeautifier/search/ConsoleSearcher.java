@@ -4,7 +4,6 @@ import com.Jeka8833.DocumentBeautifier.ColumnName;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
 import com.Jeka8833.DocumentBeautifier.mods.Mod;
-import com.Jeka8833.DocumentBeautifier.util.MySet;
 import com.Jeka8833.DocumentBeautifier.util.TriFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,18 +50,19 @@ public class ConsoleSearcher {
 
                 logger.info("Searching: " + formattedText + " Mistake: " + mistake);
                 for (SearchDB.DBRow rowData : searchedColumn.rowList()) {
-                    if (searchedColumn.filter().apply(rowData.getElement(), formattedText, mistake)) {
-                        StringBuilder builder = new StringBuilder(rowData.getSheet().getReader().getInputFile()
-                                + " > " + rowData.getSheet().getSheet().getSheetName() + ": ");
+                    if (searchedColumn.filter().apply(rowData.element(), formattedText, mistake)) {
+                        StringBuilder builder = new StringBuilder(rowData.sheet().getReader().getInputFile()
+                                + " > " + rowData.sheet().getSheet().getSheetName() + ": ");
 
-                        SheetDetailed sheet = rowData.getSheet();
+                        SheetDetailed sheet = rowData.sheet();
                         for (ColumnName name : printingColumn) {
                             if (sheet.getColumnNames().contains(name)) {
                                 ColumnName used = sheet.getColumnNames().get(name);
                                 if (used.getPosX() >= 0) {
-                                    Cell cell = rowData.getCell().getRow().getCell(used.getPosX());
+                                    Cell cell = rowData.cell().getRow().getCell(used.getPosX());
                                     if (cell != null) {
-                                        builder.append(used.getName()).append(": ").append(ExcelCell.getText(cell)).append("; ");
+                                        builder.append(used.getName()).append(": ")
+                                                .append(ExcelCell.getText(cell)).append("; ");
                                     }
                                 }
                             }

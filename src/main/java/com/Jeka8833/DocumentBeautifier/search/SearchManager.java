@@ -19,7 +19,7 @@ public class SearchManager {
         Map<String, List<SearchDB.DBRow>> out = new HashMap<>();
         for (Map.Entry<String, List<SearchDB.DBRow>> entry : listMap.entrySet()) {
             SearchDB.DBRow dbRow = findRowByPath(entry.getValue(), filerFiles);
-            if (dbRow != null && dbRow.getElement().equalsIgnoreCase(entry.getKey())) {
+            if (dbRow != null && dbRow.element().equalsIgnoreCase(entry.getKey())) {
                 out.put(entry.getKey(), entry.getValue());
             }
         }
@@ -27,24 +27,24 @@ public class SearchManager {
     }
 
     public static Map<String, List<SearchDB.DBRow>> searchDuplicates(List<SearchDB.DBRow> rowList) {
-        return deleteSingleItem(rowList.stream().collect(Collectors.groupingBy(SearchDB.DBRow::getElement)));
+        return deleteSingleItem(rowList.stream().collect(Collectors.groupingBy(SearchDB.DBRow::element)));
     }
 
     public static Map<String, List<SearchDB.DBRow>> searchDuplicatesIgnoreFullEquals(List<SearchDB.DBRow> rowList,
                                                                                      BiFunction<String, String, Boolean> compareFunction) {
         Map<String, List<SearchDB.DBRow>> out = new HashMap<>();
         for (SearchDB.DBRow rowFirst : rowList) {
-            if (out.containsKey(rowFirst.getElement())) continue;
+            if (out.containsKey(rowFirst.element())) continue;
 
             List<SearchDB.DBRow> temp = new ArrayList<>();
             temp.add(rowFirst);
 
             for (SearchDB.DBRow rowSecond : rowList) {
-                if (rowFirst.getElement().equals(rowSecond.getElement())) continue;
+                if (rowFirst.element().equals(rowSecond.element())) continue;
 
-                if (compareFunction.apply(rowFirst.getElement(), rowSecond.getElement())) temp.add(rowSecond);
+                if (compareFunction.apply(rowFirst.element(), rowSecond.element())) temp.add(rowSecond);
             }
-            if (temp.size() > 1) out.put(rowFirst.getElement(), temp);
+            if (temp.size() > 1) out.put(rowFirst.element(), temp);
         }
         return out;
     }
@@ -53,18 +53,18 @@ public class SearchManager {
                                                                                                BiFunction<String, String, Boolean> compareFunction) {
         Map<String, List<SearchDB.DBRow>> out = new HashMap<>();
         for (SearchDB.DBRow rowFirst : rowList) {
-            if (out.containsKey(rowFirst.getElement())) continue;
+            if (out.containsKey(rowFirst.element())) continue;
             if (!containsPath(rowFirst, filter)) continue;
 
             List<SearchDB.DBRow> temp = new ArrayList<>();
             temp.add(rowFirst);
 
             for (SearchDB.DBRow rowSecond : rowList) {
-                if (rowFirst.getElement().equals(rowSecond.getElement())) continue;
+                if (rowFirst.element().equals(rowSecond.element())) continue;
 
-                if (compareFunction.apply(rowFirst.getElement(), rowSecond.getElement())) temp.add(rowSecond);
+                if (compareFunction.apply(rowFirst.element(), rowSecond.element())) temp.add(rowSecond);
             }
-            if (temp.size() > 1) out.put(rowFirst.getElement(), temp);
+            if (temp.size() > 1) out.put(rowFirst.element(), temp);
         }
         return out;
     }
@@ -74,7 +74,7 @@ public class SearchManager {
 
         for (SearchDB.DBRow row : rowList) {
             for (Path path : filerFiles) {
-                if (row.getSheet().getReader().getInputFile().equals(path)) return row;
+                if (row.sheet().getReader().getInputFile().equals(path)) return row;
             }
         }
         return null;
@@ -82,7 +82,7 @@ public class SearchManager {
 
     private static boolean containsPath(SearchDB.DBRow row, List<Path> filter) {
         for (Path path : filter) {
-            if (row.getSheet().getReader().getInputFile().equals(path))
+            if (row.sheet().getReader().getInputFile().equals(path))
                 return true;
         }
         return false;

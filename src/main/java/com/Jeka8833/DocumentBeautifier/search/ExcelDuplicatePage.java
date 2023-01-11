@@ -52,13 +52,13 @@ public class ExcelDuplicatePage {
                         ExcelCell.writeCell(row, 0, filterEntry.getKey());
 
                         for (SearchDB.DBRow rowData : filterEntry.getValue()) {
-                            ExcelCell.writeCell(row, 1, Integer.toString(rowData.getCell().getRowIndex() + 1));
-                            ExcelCell.writeCell(row, 2, rowData.getSheet().getSheet().getSheetName());
-                            ExcelCell.writeCell(row, 3, rowData.getSheet().getReader().getInputFile().toString());
+                            ExcelCell.writeCell(row, 1, Integer.toString(rowData.cell().getRowIndex() + 1));
+                            ExcelCell.writeCell(row, 2, rowData.sheet().getSheet().getSheetName());
+                            ExcelCell.writeCell(row, 3, rowData.sheet().getReader().getInputFile().toString());
                             for (int i = 0; i < columnNames.length; i++) {
-                                ColumnName columnNamePos = rowData.getSheet().getColumnNames().get(columnNames[i]);
+                                ColumnName columnNamePos = rowData.sheet().getColumnNames().get(columnNames[i]);
                                 if (columnNamePos != null && columnNamePos.getPosX() >= 0) {
-                                    Cell cell = rowData.getCell().getRow().getCell(columnNamePos.getPosX());
+                                    Cell cell = rowData.cell().getRow().getCell(columnNamePos.getPosX());
                                     ExcelCell.writeCell(row, 4 + i, ExcelCell.getText(cell));
                                 }
                             }
