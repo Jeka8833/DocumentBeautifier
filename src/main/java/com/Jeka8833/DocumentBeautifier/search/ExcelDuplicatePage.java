@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -31,36 +32,34 @@ public class ExcelDuplicatePage {
         try (Workbook workbook = new XSSFWorkbook()) {
             for (Map.Entry<String, List<FilterPage>> entry : filterList.entrySet()) {
                 Sheet sheet = workbook.createSheet(entry.getKey());
-                int rowNumber = 0;
-                Row row = sheet.createRow(rowNumber++);
 
-                int columnPos = 0;
-                ExcelCell.writeCell(row, columnPos++, "Match");
-                ExcelCell.writeCell(row, columnPos++, "Row");
-                for (ColumnName name : columnNames) ExcelCell.writeCell(row, columnPos++, name.getName());
+                Row row = sheet.createRow(0);
+                ExcelCell.writeCell(row, 0, "Match");
+                ExcelCell.writeCell(row, 1, "Row");
+                ExcelCell.writeCell(row, 2, "Sheet");
+                ExcelCell.writeCell(row, 3, "Path");
+                for (int i = 0; i < columnNames.length; i++) {
+                    ExcelCell.writeCell(row, 4 + i, columnNames[i].getName());
+                }
 
+                int rowNumber = 1;
                 for (FilterPage page : entry.getValue()) {
                     row = sheet.createRow(rowNumber++);
                     ExcelCell.writeCell(row, 0, page.name());
 
                     for (Map.Entry<String, List<SearchDB.DBRow>> filterEntry : page.duplicates().entrySet()) {
-                        List<SearchDB.DBRow> data = filterEntry.getValue();
-
                         row = sheet.createRow(rowNumber++);
                         ExcelCell.writeCell(row, 0, filterEntry.getKey());
-                        for (SearchDB.DBRow rowData : data) {
-                            columnPos = 1;
-                            ExcelCell.writeCell(row, columnPos++, "" + (rowData.getCell().getRowIndex() + 1));
-                            for (ColumnName name : columnNames) {
-                                ColumnName columnNamePos = rowData.getSheet().getColumnNames().get(name);
-                                if (columnNamePos == null) {
-                                    ExcelCell.writeCell(row, columnPos++, "");
-                                } else {
-                                    Cell cell = rowData.getSheet().getSheet()
-                                            .getRow(rowData.getCell().getRowIndex())
-                                            .getCell(columnNamePos.getPosX());
 
-                                    ExcelCell.writeCell(row, columnPos++, ExcelCell.getText(cell));
+                        for (SearchDB.DBRow rowData : filterEntry.getValue()) {
+                            ExcelCell.writeCell(row, 1, Integer.toString(rowData.getCell().getRowIndex() + 1));
+                            ExcelCell.writeCell(row, 2, rowData.getSheet().getSheet().getSheetName());
+                            ExcelCell.writeCell(row, 3, rowData.getSheet().getReader().getInputFile().toString());
+                            for (int i = 0; i < columnNames.length; i++) {
+                                ColumnName columnNamePos = rowData.getSheet().getColumnNames().get(columnNames[i]);
+                                if (columnNamePos != null && columnNamePos.getPosX() >= 0) {
+                                    Cell cell = rowData.getCell().getRow().getCell(columnNamePos.getPosX());
+                                    ExcelCell.writeCell(row, 4 + i, ExcelCell.getText(cell));
                                 }
                             }
 
@@ -69,7 +68,9 @@ public class ExcelDuplicatePage {
                     }
                 }
             }
-            workbook.write(Files.newOutputStream(output));
+            try (OutputStream stream = Files.newOutputStream(output)) {
+                workbook.write(stream);
+            }
         } catch (IOException e) {
             logger.error("Fail create Excel document", e);
         }

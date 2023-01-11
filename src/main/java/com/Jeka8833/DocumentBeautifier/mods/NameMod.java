@@ -7,6 +7,8 @@ import com.Jeka8833.DocumentBeautifier.util.LevenshteinDistance;
 import org.apache.poi.ss.usermodel.Cell;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 

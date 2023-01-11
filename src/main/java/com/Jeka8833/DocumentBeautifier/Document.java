@@ -13,95 +13,112 @@ import org.apache.poi.ss.usermodel.Row;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 import java.util.stream.Stream;
 
 public class Document {
     private static final Logger logger = LogManager.getLogger(Document.class);
+
     private final List<Mod> mods = new ArrayList<>();
 
+    public void processBeautifier(Path inputFile, Path outputFile) throws IOException {
+        try (ExcelReader reader = new ExcelReader(inputFile)) {
+            SheetDetailed[] sheets = reader.getSheetsWithNames(mods);
+            for (SheetDetailed sheet : sheets) {
+                if (!sheet.haveColumn()) continue;
 
-    public ExcelReader processBeautifier(Path inputFile, Path outputFile) throws IOException {
-        ExcelReader reader = new ExcelReader(inputFile);
-        SheetDetailed[] sheets = reader.getSheetsWithNames(mods);
-        for (SheetDetailed sheet : sheets) {
-            if (!sheet.haveColumn()) continue;
-
-            MySet<ColumnName> columnNames = sheet.getColumnNames();
-            for (Row row : sheet.getSheet()) {
-                if (sheet.getStartPosY() > row.getRowNum()) continue;
-                for (Mod mod : mods) {
-                    for (ColumnName column : columnNames.keySet()) {
-                        mod.process(sheet, column, row.getCell(column.getPosX()));
+                MySet<ColumnName> columnNames = sheet.getColumnNames();
+                for (Row row : sheet.getSheet()) {
+                    if (sheet.getStartPosY() > row.getRowNum()) continue;
+                    for (Mod mod : mods) {
+                        for (ColumnName column : columnNames.keySet()) {
+                            mod.process(sheet, column, row.getCell(column.getPosX()));
+                        }
                     }
                 }
             }
+            reader.save(outputFile);
         }
-        reader.save(outputFile);
-        return reader;
     }
 
     public void processSearchFiles(List<Path> inputFiles, MySet<ColumnName> searching, SearchDB searchDB)
-            throws IOException {
+            throws InterruptedException {
+        ExecutorService threadPool = Executors.newWorkStealingPool();
+        try {
+            processSearchFiles(inputFiles, searching, searchDB, threadPool);
+        } finally {
+            threadPool.shutdown();
+        }
+    }
+
+    public void processSearchFiles(List<Path> inputFiles, MySet<ColumnName> searching, SearchDB searchDB,
+                                   ExecutorService threadPool) throws InterruptedException {
+        List<Callable<Void>> taskPool = new ArrayList<>();
         for (Path path : inputFiles) {
             if (Files.isDirectory(path)) {
                 try (Stream<Path> fileStream = Files.walk(path)) {
-                    fileStream.filter(Files::isRegularFile)
-                            .filter(Document::checkSupportFormat)
-                            .forEach(path1 -> {
+                    fileStream.filter(Document::checkSupportFormat)
+                            .forEach(path1 -> taskPool.add(() -> {
                                 try {
                                     processSearch(path1, searching, searchDB);
                                 } catch (Exception e) {
                                     logger.warn("Fail process file" + e);
                                 }
-                            });
+                                return null;
+                            }));
+                } catch (IOException e) {
+                    logger.warn("Fail walk" + e);
                 }
-            } else if (Files.isRegularFile(path)) {
-                if (checkSupportFormat(path)) {
+            } else if (checkSupportFormat(path)) {
+                taskPool.add(() -> {
                     try {
                         processSearch(path, searching, searchDB);
                     } catch (Exception e) {
                         logger.warn("Fail process file" + e);
                     }
-                }
-            } else {
-                logger.warn("File or folder not exists: " + path);
+                    return null;
+                });
             }
         }
+        threadPool.invokeAll(taskPool);
     }
 
     public static boolean checkSupportFormat(@NotNull Path path) {
+        if (!Files.isRegularFile(path)) return false;
+
         String name = path.getFileName().toString().toLowerCase();
         return !name.startsWith("~$") && (name.endsWith(".xls") || name.endsWith(".xlsx"));
     }
 
-    public ExcelReader processSearch(Path inputFile, MySet<ColumnName> searching, SearchDB searchDB) throws IOException {
+    public void processSearch(Path inputFile, MySet<ColumnName> searching, SearchDB searchDB) throws IOException {
         logger.info("Search in file: " + inputFile);
-        ExcelReader reader = new ExcelReader(inputFile);
-        SheetDetailed[] sheets = reader.getSheetsWithNames(mods);
-        for (SheetDetailed sheet : sheets) {
-            if (!sheet.haveColumn()) continue;
+        try (ExcelReader reader = new ExcelReader(inputFile)) {
+            SheetDetailed[] sheets = reader.getSheetsWithNames(mods);
+            for (SheetDetailed sheet : sheets) {
+                if (!sheet.haveColumn()) continue;
 
-            MySet<ColumnName> columnNames = sheet.getColumnNames();
-            for (Row row : sheet.getSheet()) {
-                if (sheet.getStartPosY() > row.getRowNum()) continue;
+                MySet<ColumnName> columnNames = sheet.getColumnNames();
+                for (Row row : sheet.getSheet()) {
+                    if (sheet.getStartPosY() > row.getRowNum()) continue;
 
-                for (ColumnName column : columnNames.keySet()) {
-                    if (!searching.contains(column)) continue;
+                    for (ColumnName column : columnNames.keySet()) {
+                        if (!searching.contains(column)) continue;
 
-                    Cell cell = row.getCell(column.getPosX());
-                    String formattedText = ExcelCell.getText(cell);
-                    for (Mod mod : mods) {
-                        formattedText = mod.formatText(column, formattedText);
+                        Cell cell = row.getCell(column.getPosX());
+                        String formattedText = ExcelCell.getText(cell);
+                        for (Mod mod : mods) {
+                            formattedText = mod.formatText(column, formattedText);
+                        }
+                        if (!formattedText.isBlank()) searchDB.add(sheet, column, cell, formattedText);
                     }
-                    if (!formattedText.isBlank()) searchDB.add(sheet, column, cell, formattedText);
                 }
             }
         }
-        return reader;
     }
 
     public void addMod(Mod mod) {

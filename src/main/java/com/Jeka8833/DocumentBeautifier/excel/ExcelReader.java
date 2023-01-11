@@ -2,15 +2,17 @@ package com.Jeka8833.DocumentBeautifier.excel;
 
 import com.Jeka8833.DocumentBeautifier.mods.Mod;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 
-public class ExcelReader {
+public class ExcelReader implements AutoCloseable {
 
     private final Workbook workbook;
     private final Path inputFile;
@@ -50,8 +52,9 @@ public class ExcelReader {
     }
 
     public void save(Path file) throws IOException {
-        workbook.write(Files.newOutputStream(file));
-        workbook.close();
+        try (OutputStream stream = Files.newOutputStream(file)) {
+            workbook.write(stream);
+        }
     }
 
     public Workbook getWorkbook() {
@@ -60,5 +63,13 @@ public class ExcelReader {
 
     public Path getInputFile() {
         return inputFile;
+    }
+
+    @Override
+    public void close() {
+        try {
+            workbook.close();
+        } catch (IOException ignored) {
+        }
     }
 }

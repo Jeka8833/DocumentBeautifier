@@ -14,7 +14,7 @@ public class SearchDB {
 
     private final Map<ColumnName, List<DBRow>> searchDB = new HashMap<>();
 
-    public void add(SheetDetailed sheet, ColumnName column, Cell cell, String text) {
+    public synchronized void add(SheetDetailed sheet, ColumnName column, Cell cell, String text) {
         List<DBRow> rowList = searchDB.get(column);
         if (rowList == null) {
             List<DBRow> newList = new ArrayList<>();
