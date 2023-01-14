@@ -47,11 +47,11 @@ public class ExcelDuplicatePage {
                     row = sheet.createRow(rowNumber++);
                     ExcelCell.writeCell(row, 0, page.name());
 
-                    for (Map.Entry<String, List<SearchDB.DBRow>> filterEntry : page.duplicates().entrySet()) {
+                    for (Map.Entry<String, List<DBRow>> filterEntry : page.duplicates().entrySet()) {
                         row = sheet.createRow(rowNumber++);
                         ExcelCell.writeCell(row, 0, filterEntry.getKey());
 
-                        for (SearchDB.DBRow rowData : filterEntry.getValue()) {
+                        for (DBRow rowData : filterEntry.getValue()) {
                             ExcelCell.writeCell(row, 1, Integer.toString(rowData.cell().getRowIndex() + 1));
                             ExcelCell.writeCell(row, 2, rowData.sheet().getSheet().getSheetName());
                             ExcelCell.writeCell(row, 3, rowData.sheet().getReader().getInputFile().toString());
@@ -82,6 +82,6 @@ public class ExcelDuplicatePage {
         filterList.get(sheetName).add(filterPage);
     }
 
-    public record FilterPage(String name, Map<String, List<SearchDB.DBRow>> duplicates) {
+    public record FilterPage(String name, Map<String, List<DBRow>> duplicates) {
     }
 }

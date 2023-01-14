@@ -12,13 +12,13 @@ import java.util.stream.Collectors;
 
 public class SearchManager {
 
-    public static Map<String, List<SearchDB.DBRow>> filterOfPath(Map<String, List<SearchDB.DBRow>> listMap,
-                                                                 Path... filerFiles) {
+    public static Map<String, List<DBRow>> filterOfPath(Map<String, List<DBRow>> listMap,
+                                                        Path... filerFiles) {
         if (filerFiles == null) return listMap;
 
-        Map<String, List<SearchDB.DBRow>> out = new HashMap<>();
-        for (Map.Entry<String, List<SearchDB.DBRow>> entry : listMap.entrySet()) {
-            SearchDB.DBRow dbRow = findRowByPath(entry.getValue(), filerFiles);
+        Map<String, List<DBRow>> out = new HashMap<>();
+        for (Map.Entry<String, List<DBRow>> entry : listMap.entrySet()) {
+            DBRow dbRow = findRowByPath(entry.getValue(), filerFiles);
             if (dbRow != null && dbRow.element().equalsIgnoreCase(entry.getKey())) {
                 out.put(entry.getKey(), entry.getValue());
             }
@@ -26,20 +26,20 @@ public class SearchManager {
         return out;
     }
 
-    public static Map<String, List<SearchDB.DBRow>> searchDuplicates(List<SearchDB.DBRow> rowList) {
-        return deleteSingleItem(rowList.stream().collect(Collectors.groupingBy(SearchDB.DBRow::element)));
+    public static Map<String, List<DBRow>> searchDuplicates(List<DBRow> rowList) {
+        return deleteSingleItem(rowList.stream().collect(Collectors.groupingBy(DBRow::element)));
     }
 
-    public static Map<String, List<SearchDB.DBRow>> searchDuplicatesIgnoreFullEquals(List<SearchDB.DBRow> rowList,
-                                                                                     BiFunction<String, String, Boolean> compareFunction) {
-        Map<String, List<SearchDB.DBRow>> out = new HashMap<>();
-        for (SearchDB.DBRow rowFirst : rowList) {
+    public static Map<String, List<DBRow>> searchDuplicatesIgnoreFullEquals(List<DBRow> rowList,
+                                                                            BiFunction<String, String, Boolean> compareFunction) {
+        Map<String, List<DBRow>> out = new HashMap<>();
+        for (DBRow rowFirst : rowList) {
             if (out.containsKey(rowFirst.element())) continue;
 
-            List<SearchDB.DBRow> temp = new ArrayList<>();
+            List<DBRow> temp = new ArrayList<>();
             temp.add(rowFirst);
 
-            for (SearchDB.DBRow rowSecond : rowList) {
+            for (DBRow rowSecond : rowList) {
                 if (rowFirst.element().equals(rowSecond.element())) continue;
 
                 if (compareFunction.apply(rowFirst.element(), rowSecond.element())) temp.add(rowSecond);
@@ -49,17 +49,17 @@ public class SearchManager {
         return out;
     }
 
-    public static Map<String, List<SearchDB.DBRow>> searchDuplicatesIgnoreFullEqualsFilterPath(List<SearchDB.DBRow> rowList, List<Path> filter,
-                                                                                               BiFunction<String, String, Boolean> compareFunction) {
-        Map<String, List<SearchDB.DBRow>> out = new HashMap<>();
-        for (SearchDB.DBRow rowFirst : rowList) {
+    public static Map<String, List<DBRow>> searchDuplicatesIgnoreFullEqualsFilterPath(List<DBRow> rowList, List<Path> filter,
+                                                                                      BiFunction<String, String, Boolean> compareFunction) {
+        Map<String, List<DBRow>> out = new HashMap<>();
+        for (DBRow rowFirst : rowList) {
             if (out.containsKey(rowFirst.element())) continue;
             if (!containsPath(rowFirst, filter)) continue;
 
-            List<SearchDB.DBRow> temp = new ArrayList<>();
+            List<DBRow> temp = new ArrayList<>();
             temp.add(rowFirst);
 
-            for (SearchDB.DBRow rowSecond : rowList) {
+            for (DBRow rowSecond : rowList) {
                 if (rowFirst.element().equals(rowSecond.element())) continue;
 
                 if (compareFunction.apply(rowFirst.element(), rowSecond.element())) temp.add(rowSecond);
@@ -69,10 +69,10 @@ public class SearchManager {
         return out;
     }
 
-    private static SearchDB.DBRow findRowByPath(@NotNull List<SearchDB.DBRow> rowList, Path... filerFiles) {
+    private static DBRow findRowByPath(@NotNull List<DBRow> rowList, Path... filerFiles) {
         if (filerFiles == null) return null;
 
-        for (SearchDB.DBRow row : rowList) {
+        for (DBRow row : rowList) {
             for (Path path : filerFiles) {
                 if (row.sheet().getReader().getInputFile().equals(path)) return row;
             }
@@ -80,7 +80,7 @@ public class SearchManager {
         return null;
     }
 
-    private static boolean containsPath(SearchDB.DBRow row, List<Path> filter) {
+    private static boolean containsPath(DBRow row, List<Path> filter) {
         for (Path path : filter) {
             if (row.sheet().getReader().getInputFile().equals(path))
                 return true;
@@ -88,9 +88,9 @@ public class SearchManager {
         return false;
     }
 
-    public static Map<String, List<SearchDB.DBRow>> deleteSingleItem(Map<String, List<SearchDB.DBRow>> listMap) {
-        Map<String, List<SearchDB.DBRow>> out = new HashMap<>();
-        for (Map.Entry<String, List<SearchDB.DBRow>> entry : listMap.entrySet()) {
+    public static Map<String, List<DBRow>> deleteSingleItem(Map<String, List<DBRow>> listMap) {
+        Map<String, List<DBRow>> out = new HashMap<>();
+        for (Map.Entry<String, List<DBRow>> entry : listMap.entrySet()) {
             if (entry.getValue().size() >= 2) out.put(entry.getKey(), entry.getValue());
         }
         return out;

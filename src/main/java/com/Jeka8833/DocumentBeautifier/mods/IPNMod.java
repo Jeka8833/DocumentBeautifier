@@ -104,4 +104,19 @@ public class IPNMod implements Mod {
 
         return text.replaceAll("\\D+", "");
     }
+
+    public boolean isValid(String ipn) {
+        if (ipn.length() != 10) return false;
+
+        LocalDate age = LocalDate.of(1899, 12, 31)
+                .plusDays(Integer.parseInt(ipn.substring(0, 5)));
+
+        int[] number = Arrays.stream(ipn.split("")).mapToInt(Integer::parseInt).toArray();
+        int sum = number[0] * (-1) + number[1] * 5 + number[2] * 7 + number[3] * 9 + number[4] * 4 + number[5] * 6 +
+                number[6] * 10 + number[7] * 5 + number[8] * 7;
+
+        return ((sum % 11) % 10) == number[9] &&
+                (maxDate == null || maxDate.isAfter(age)) &&
+                (minDate == null || minDate.isBefore(age));
+    }
 }
