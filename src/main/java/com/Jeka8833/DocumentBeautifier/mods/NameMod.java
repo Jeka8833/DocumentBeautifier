@@ -4,6 +4,7 @@ import com.Jeka8833.DocumentBeautifier.ColumnName;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
 import com.Jeka8833.DocumentBeautifier.util.LevenshteinDistance;
+import com.Jeka8833.DocumentBeautifier.util.Util;
 import org.apache.poi.ss.usermodel.Cell;
 import org.jetbrains.annotations.Nullable;
 
@@ -48,7 +49,8 @@ public class NameMod implements Mod {
     public String formatText(ColumnName column, String text) {
         if (!column.equals(input)) return text;
 
-        text = text.strip().replaceAll(" {2,}", " ")
+        text = Util.replaceEnglish(text.strip().replaceAll(" {2,}", " "))
+                .replace('3', 'з')
                 .toLowerCase();
 
         if (text.isEmpty()) return "";

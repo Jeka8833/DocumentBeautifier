@@ -20,7 +20,7 @@ public class ConsoleSearcher {
     public static void start(SearchDB searchDB, ColumnName[] printingColumn, SearchFilter... filters) {
         Map<String, SearchedColumn> listMap = new HashMap<>();
         for (SearchFilter filter : filters) {
-            List<DBRow> rowList = searchDB.getColumn(filter.column());
+            List<DBElement> rowList = searchDB.getColumn(filter.column());
             if (rowList != null)
                 listMap.put(filter.shortName,
                         new SearchedColumn(rowList, filter.formatted(), filter.column(), filter.filter()));
@@ -49,7 +49,7 @@ public class ConsoleSearcher {
                 String formattedText = searchedColumn.mod().formatText(searchedColumn.column(), input[2]);
 
                 logger.info("Searching: " + formattedText + " Mistake: " + mistake);
-                for (DBRow rowData : searchedColumn.rowList()) {
+                for (DBElement rowData : searchedColumn.rowList()) {
                     if (searchedColumn.filter().apply(rowData.element(), formattedText, mistake)) {
                         StringBuilder builder = new StringBuilder(rowData.sheet().getReader().getInputFile()
                                 + " > " + rowData.sheet().getSheet().getSheetName() + ": ");
@@ -81,7 +81,7 @@ public class ConsoleSearcher {
                                TriFunction<String, String, Integer, Boolean> filter) {
     }
 
-    private record SearchedColumn(List<DBRow> rowList, Mod mod, ColumnName column,
+    private record SearchedColumn(List<DBElement> rowList, Mod mod, ColumnName column,
                                   TriFunction<String, String, Integer, Boolean> filter) {
     }
 }

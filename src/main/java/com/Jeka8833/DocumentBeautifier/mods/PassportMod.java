@@ -3,6 +3,7 @@ package com.Jeka8833.DocumentBeautifier.mods;
 import com.Jeka8833.DocumentBeautifier.ColumnName;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
+import com.Jeka8833.DocumentBeautifier.util.Util;
 import org.apache.poi.ss.usermodel.Cell;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,22 +56,7 @@ public class PassportMod implements Mod {
     public String formatText(ColumnName column, String text) {
         if (!column.equals(input)) return text;
 
-        return replaceEnglish(text.toUpperCase()).replaceAll("[^А-Я0-9ІЇ]+", "");
-    }
-
-    public static @NotNull String replaceEnglish(@NotNull String text) {
-        return text.replace('A', 'А')
-                .replace('B', 'В')
-                .replace('C', 'С')
-                .replace('E', 'Е')
-                .replace('H', 'Н')
-                .replace('I', 'І')
-                .replace('K', 'К')
-                .replace('M', 'М')
-                .replace('O', 'О')
-                .replace('P', 'Р')
-                .replace('T', 'Т')
-                .replace('X', 'Х');
+        return Util.replaceEnglish(text.toUpperCase()).replaceAll("[^А-Я0-9ІЇ]+", "");
     }
 
     private static boolean isPassportCode(String text) {

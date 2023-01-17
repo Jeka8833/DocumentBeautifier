@@ -10,20 +10,24 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SearchDB {
 
-    private final Map<ColumnName, List<DBRow>> searchDB = new ConcurrentHashMap<>();
+    private final Map<ColumnName, List<DBElement>> searchDB = new ConcurrentHashMap<>();
 
     public void add(SheetDetailed sheet, ColumnName column, Cell cell, String text) {
-        List<DBRow> rowList = searchDB.computeIfAbsent(column,
+        List<DBElement> rowList = searchDB.computeIfAbsent(column,
                 columnName -> Collections.synchronizedList(new ArrayList<>()));
-        rowList.add(new DBRow(sheet, cell, text));
+        rowList.add(new DBElement(sheet, cell, text));
     }
 
     @Nullable
-    public List<DBRow> getColumn(ColumnName column) {
+    public List<DBElement> getColumn(ColumnName column) {
         return searchDB.get(column);
     }
 
-    public Map<ColumnName, List<DBRow>> getSearchDB() {
+    public Map<ColumnName, List<DBElement>> getSearchDB() {
         return searchDB;
+    }
+
+    public Search search(ColumnName column) {
+        return new Search(searchDB.get(column));
     }
 }
