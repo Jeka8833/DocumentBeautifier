@@ -1,69 +1,82 @@
 package com.Jeka8833.DocumentBeautifier.mods;
 
-import com.Jeka8833.DocumentBeautifier.ColumnName;
+import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
+import com.Jeka8833.DocumentBeautifier.header.ColumnParser;
 import com.Jeka8833.DocumentBeautifier.util.Util;
 import org.apache.poi.ss.usermodel.Cell;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.stream.Stream;
 
 public class AddressMod implements Mod {
-    public @Nullable ColumnName input = new ColumnName("ADDRESS_IN", "Address");
-    public @Nullable ColumnName output = new ColumnName("ADDRESS_OUT", "Address");
+    public @Nullable ColumnHeader input = new ColumnHeader("ADDRESS_IN", "Address");
+    public @Nullable ColumnHeader output = new ColumnHeader("ADDRESS_OUT", "Address");
 
     public boolean printFormattingWarning = true;
+    public String replaceStreetType = "";
 
     @Override
-    public ColumnName[] getNeededColumn() {
-        if (input == null) return new ColumnName[0];
+    public ColumnHeader[] getNeededColumn() {
+        if (input == null) return new ColumnHeader[0];
 
         return Stream.of(input, output)
                 .filter(Objects::nonNull)
-                .map(ColumnName::clone)
-                .toArray(ColumnName[]::new);
+                .map(ColumnHeader::clone)
+                .toArray(ColumnHeader[]::new);
     }
 
     @Override
-    public void process(SheetDetailed sheet, ColumnName column, Cell cell) {
+    public void process(SheetDetailed sheet, ColumnHeader column, Cell cell) {
         if (!column.equals(input)) return;
 
-        String text = formatText(column, ExcelCell.getText(cell));
-        if (text.isEmpty()) return;
+        boolean containsOutputField = sheet.getColumnNames().contains(output);
+        if (!containsOutputField && !printFormattingWarning) return;
 
-        if (sheet.getColumnNames().contains(output)) {
-            int poxX = sheet.getColumnNames().get(output).getPosX();
-            ExcelCell.writeCell(cell.getRow(), poxX, text);
-        }
+        String text = ExcelCell.getText(cell);
+        String textFormatted = formatText(column, text);
 
-        if (printFormattingWarning) {
-            String textWithoutFormatting = ExcelCell.getText(cell);
-            if (!text.equals(textWithoutFormatting)) cell.setCellStyle(sheet.yellowColorStyle());
+        if (!text.equals(textFormatted)) {
+            if (printFormattingWarning) cell.setCellStyle(sheet.yellowColorStyle());
+
+            if (containsOutputField) {
+                int poxX = sheet.getColumnNames().get(output).getPosX();
+                ExcelCell.writeCell(cell.getRow(), poxX, textFormatted);
+            }
         }
     }
 
     @Override
-    public String formatText(ColumnName column, String text) {
+    public String formatText(ColumnHeader column, String text) {
         if (!column.equals(input)) return text;
 
-        text = Util.replaceEnglish(text.strip().replaceAll(" {2,}", " "))
-                .toLowerCase();
+        text = Util.replaceEnglish(text)
+                .toLowerCase()
+                .replaceAll("[^0-9а-яёіїєґщ/\\\\№#’\\-.,\\s]+", "")
+                .strip();
 
         if (text.isEmpty()) return "";
 
         String[] partName = text.split("[.,\\s]+");
-        StringBuilder stringBuilder = new StringBuilder(formatFirstPart(partName[0]));
+        StringBuilder stringBuilder = new StringBuilder();
+        if (replaceStreetType.isEmpty()) {
+            stringBuilder.append(formatFirstPart(partName[0]));
+        } else {
+            stringBuilder.append(replaceStreetType);
+        }
 
-        int index = findIndexPart(partName);
-        for (int i = 1; i < partName.length; i++) {
+        int index = findIndexPart(partName, !replaceStreetType.isEmpty());
+        for (int i = !replaceStreetType.isEmpty() ? 0 : 1; i < partName.length; i++) {
             String part = partName[i];
             if (i > index) {
                 stringBuilder.append(part);
             } else {
                 stringBuilder.append(Character.toUpperCase(part.charAt(0)))
-                        .append(part.length() > 1 ? part.substring(1) : ".");
+                        .append(part.length() > 1 ? part.substring(1) :
+                                (Character.isDigit(part.charAt(0)) ? "" : "."));
             }
             if (index == i) {
                 stringBuilder.append(", ");
@@ -75,6 +88,18 @@ public class AddressMod implements Mod {
         return stringBuilder.toString().stripTrailing();
     }
 
+    @Override
+    public Mod setParameters(@NotNull String param) {
+        if (param.length() >= 7) {
+            try {
+                return ColumnParser.updateModParameter((AddressMod) super.clone(), param);
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+        }
+        return this;
+    }
+
     private static String formatFirstPart(String text) {
         return text.replaceAll("(ву|ул).*", "вул.")
                 .replaceAll("п.*", "пров.")
@@ -83,8 +108,9 @@ public class AddressMod implements Mod {
                 .replaceAll("т.*", "тупик ");
     }
 
-    private static int findIndexPart(String[] parts) {
-        for (int i = parts.length - 1; i > 0; i--) {
+    private static int findIndexPart(@NotNull String[] parts, boolean includeFirst) {
+        final int endIndex = includeFirst ? 0 : 1;
+        for (int i = parts.length - 1; i >= endIndex; i--) {
             if (!hasNumber(parts[i])) return i;
         }
         return parts.length;

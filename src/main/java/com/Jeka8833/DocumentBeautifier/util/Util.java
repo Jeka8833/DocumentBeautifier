@@ -24,7 +24,7 @@ public class Util {
                 .replace('o', 'о')
                 .replace('p', 'р')
                 .replace('x', 'х')
-                .replace('y', 'у');
+                .replace('y', 'у')
+                .replaceAll("[`'’ʼ]", "’");
     }
-
 }

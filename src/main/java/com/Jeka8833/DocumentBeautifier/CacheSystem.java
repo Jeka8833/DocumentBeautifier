@@ -52,7 +52,7 @@ public class CacheSystem {
         @Override
         public boolean equals(Object o) {
             DistanceCache that = (DistanceCache) o;
-            // A == A && B == B or A == B && B == A
+            // A1 == A2 && B1 == B2 or A1 == B2 && B1 == A2
 
             if (a.equals(that.a) && b.equals(that.b)) return true;
             return b.equals(that.a) && a.equals(that.b);
@@ -61,7 +61,7 @@ public class CacheSystem {
         @Override
         public int hashCode() {
             // Controlled collision and buffer overflow
-            return a.hashCode() * b.hashCode();
+            return a.hashCode() + b.hashCode();
         }
     }
 
@@ -72,7 +72,7 @@ public class CacheSystem {
 
             if (limit != that.limit) return false;
 
-            // A == A && B == B or A == B && B == A
+            // A1 == A2 && B1 == B2 or A1 == B2 && B1 == A2
 
             if (a.equals(that.a) && b.equals(that.b)) return true;
             return b.equals(that.a) && a.equals(that.b);
@@ -81,7 +81,7 @@ public class CacheSystem {
         @Override
         public int hashCode() {
             // Controlled collision and buffer overflow
-            int result = a.hashCode() * b.hashCode();
+            int result = a.hashCode() + b.hashCode();
             result = 31 * result + limit;
             return result;
         }

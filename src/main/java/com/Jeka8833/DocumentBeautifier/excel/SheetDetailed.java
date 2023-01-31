@@ -1,7 +1,8 @@
 package com.Jeka8833.DocumentBeautifier.excel;
 
-import com.Jeka8833.DocumentBeautifier.ColumnName;
-import com.Jeka8833.DocumentBeautifier.mods.Mod;
+import com.Jeka8833.DocumentBeautifier.Document;
+import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
+import com.Jeka8833.DocumentBeautifier.header.ColumnParser;
 import com.Jeka8833.DocumentBeautifier.util.MySet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,13 +10,14 @@ import org.apache.poi.ss.usermodel.*;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 public class SheetDetailed {
     private static final Logger logger = LogManager.getLogger(SheetDetailed.class);
 
     private final Sheet sheet;
     private final ExcelReader reader;
-    private final MySet<ColumnName> columnNames = new MySet<>();
+    private final MySet<ColumnHeader> columnNames = new MySet<>();
 
     private int startPosY = 0;
 
@@ -33,35 +35,35 @@ public class SheetDetailed {
         return !columnNames.isEmpty();
     }
 
-    public void setColumnNames(Collection<ColumnName> columnNames) {
+    public void setColumnNames(Collection<ColumnHeader> columnHeaders) {
         this.columnNames.clear();
-        this.columnNames.addAll(columnNames);
+        this.columnNames.addAll(columnHeaders);
     }
 
-    public void readColumnNames(Collection<Mod> mods) {
+    public void readColumnNames(Document document) {
         columnNames.clear();
 
-        ColumnName[] names = mods.stream()
-                .flatMap(mod -> Arrays.stream(mod.getNeededColumn()))
-                .toArray(ColumnName[]::new);
+        MySet<ColumnHeader> allowingLabels = new MySet<>(
+                document.getMods().stream()
+                        .flatMap(mod -> Arrays.stream(mod.getNeededColumn()))
+                        .collect(Collectors.toList()));
 
         boolean stop = false;
         for (Row row : sheet) {
             if (stop) return;
 
             for (Cell cell : row) {
-                if (cell.getCellType() != CellType.STRING) continue;
-
-                String[] columnBlocks = cell.getStringCellValue().split(";");
-                for (String block : columnBlocks) {
-                    for (ColumnName name : names) {
-                        if (name.getColumnIndex().equalsIgnoreCase(block.strip())) {
-                            name.setPosX(cell.getColumnIndex());
-                            startPosY = cell.getRowIndex() + 1;
-                            columnNames.add(name);
-                            stop = true;
-                        }
-                    }
+                String text = ExcelCell.getText(cell);
+                MySet<ColumnHeader> header = ColumnParser.text2Columns(text,
+                        allowingLabels, document.getAlternativeColumnNames());
+                for (ColumnHeader label : header.keySet()) {
+                    label.setPosX(cell.getColumnIndex());
+                    if (columnNames.contains(label))
+                        logger.warn("A column has already been defined. Contained header will be replaced: "
+                                + columnNames.get(label) + " to " + label);
+                    columnNames.add(label);
+                    startPosY = cell.getRowIndex() + 1;
+                    stop = true;
                 }
             }
         }
@@ -69,7 +71,7 @@ public class SheetDetailed {
             logger.warn("Sheet " + sheet.getSheetName() + " doesn't have header, file: " + reader.getInputFile());
     }
 
-    public MySet<ColumnName> getColumnNames() {
+    public MySet<ColumnHeader> getColumnNames() {
         return columnNames;
     }
 

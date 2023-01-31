@@ -1,6 +1,6 @@
 package com.Jeka8833.DocumentBeautifier.search;
 
-import com.Jeka8833.DocumentBeautifier.ColumnName;
+import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,10 +22,10 @@ import java.util.Map;
 public class ExcelDuplicatePage {
     private static final Logger logger = LogManager.getLogger(ExcelDuplicatePage.class);
     private final Map<String, List<FilterPage>> filterList = new HashMap<>();
-    private final ColumnName[] columnNames;
+    private final ColumnHeader[] columnHeaders;
 
-    public ExcelDuplicatePage(ColumnName[] columnNames) {
-        this.columnNames = columnNames;
+    public ExcelDuplicatePage(ColumnHeader[] columnHeaders) {
+        this.columnHeaders = columnHeaders;
     }
 
     public void create(Path output) {
@@ -38,8 +38,8 @@ public class ExcelDuplicatePage {
                 ExcelCell.writeCell(row, 1, "Row");
                 ExcelCell.writeCell(row, 2, "Sheet");
                 ExcelCell.writeCell(row, 3, "Path");
-                for (int i = 0; i < columnNames.length; i++) {
-                    ExcelCell.writeCell(row, 4 + i, columnNames[i].getName());
+                for (int i = 0; i < columnHeaders.length; i++) {
+                    ExcelCell.writeCell(row, 4 + i, columnHeaders[i].getDisplayName());
                 }
 
                 int rowNumber = 1;
@@ -55,10 +55,10 @@ public class ExcelDuplicatePage {
                             ExcelCell.writeCell(row, 1, Integer.toString(rowData.cell().getRowIndex() + 1));
                             ExcelCell.writeCell(row, 2, rowData.sheet().getSheet().getSheetName());
                             ExcelCell.writeCell(row, 3, rowData.sheet().getReader().getInputFile().toString());
-                            for (int i = 0; i < columnNames.length; i++) {
-                                ColumnName columnNamePos = rowData.sheet().getColumnNames().get(columnNames[i]);
-                                if (columnNamePos != null && columnNamePos.getPosX() >= 0) {
-                                    Cell cell = rowData.cell().getRow().getCell(columnNamePos.getPosX());
+                            for (int i = 0; i < columnHeaders.length; i++) {
+                                ColumnHeader columnHeaderPos = rowData.sheet().getColumnNames().get(columnHeaders[i]);
+                                if (columnHeaderPos != null && columnHeaderPos.getPosX() >= 0) {
+                                    Cell cell = rowData.cell().getRow().getCell(columnHeaderPos.getPosX());
                                     ExcelCell.writeCell(row, 4 + i, ExcelCell.getText(cell));
                                 }
                             }

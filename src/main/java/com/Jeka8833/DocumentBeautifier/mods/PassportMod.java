@@ -1,8 +1,9 @@
 package com.Jeka8833.DocumentBeautifier.mods;
 
-import com.Jeka8833.DocumentBeautifier.ColumnName;
+import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
+import com.Jeka8833.DocumentBeautifier.header.ColumnParser;
 import com.Jeka8833.DocumentBeautifier.util.Util;
 import org.apache.poi.ss.usermodel.Cell;
 import org.jetbrains.annotations.NotNull;
@@ -13,53 +14,68 @@ import java.util.stream.Stream;
 
 public class PassportMod implements Mod {
 
-    public @Nullable ColumnName input = new ColumnName("PASSPORT_IN", "Passport");
-    public @Nullable ColumnName output = new ColumnName("PASSPORT_OUT", "Passport");
+    public @Nullable ColumnHeader input = new ColumnHeader("PASSPORT_IN", "Passport");
+    public @Nullable ColumnHeader output = new ColumnHeader("PASSPORT_OUT", "Passport");
 
     public boolean printFormattingWarning = true;
     public boolean printPassportError = true;
 
     @Override
-    public ColumnName[] getNeededColumn() {
-        if (input == null) return new ColumnName[0];
+    public ColumnHeader[] getNeededColumn() {
+        if (input == null) return new ColumnHeader[0];
 
         return Stream.of(input, output)
                 .filter(Objects::nonNull)
-                .map(ColumnName::clone)
-                .toArray(ColumnName[]::new);
+                .map(ColumnHeader::clone)
+                .toArray(ColumnHeader[]::new);
     }
 
     @Override
-    public void process(SheetDetailed sheet, ColumnName column, Cell cell) {
+    public void process(SheetDetailed sheet, ColumnHeader column, Cell cell) {
         if (!column.equals(input)) return;
 
-        String text = formatText(column, ExcelCell.getText(cell));
-        if (text.isEmpty()) return;
+        boolean containsOutputField = sheet.getColumnNames().contains(output);
+        if (!containsOutputField && !printFormattingWarning) return;
 
-        if (!isPassportCode(text)) {
-            if (printPassportError) cell.setCellStyle(sheet.redColorStyle());
+        String text = ExcelCell.getText(cell);
+        String textFormatted = formatText(column, text);
+
+        if (!isPassportCode(textFormatted)) {
+            if (printPassportError)
+                cell.setCellStyle(sheet.redColorStyle());
             return;
         }
 
-        if (sheet.getColumnNames().contains(output)) {
-            int poxX = sheet.getColumnNames().get(output).getPosX();
-            ExcelCell.writeCell(cell.getRow(), poxX, text);
-        }
+        if (!text.equals(textFormatted)) {
+            if (printFormattingWarning) cell.setCellStyle(sheet.yellowColorStyle());
 
-        if (printFormattingWarning) {
-            String textWithoutFormatting = ExcelCell.getText(cell);
-            if (!text.equals(textWithoutFormatting)) cell.setCellStyle(sheet.yellowColorStyle());
+            if (containsOutputField) {
+                int poxX = sheet.getColumnNames().get(output).getPosX();
+                ExcelCell.writeCell(cell.getRow(), poxX, textFormatted);
+            }
         }
     }
 
     @Override
-    public String formatText(ColumnName column, String text) {
+    public String formatText(ColumnHeader column, String text) {
         if (!column.equals(input)) return text;
 
-        return Util.replaceEnglish(text.toUpperCase()).replaceAll("[^А-Я0-9ІЇ]+", "");
+        return Util.replaceEnglish(text).toUpperCase().replaceAll("[^А-Я0-9ІЇЄЩҐЁ]+", "");
+    }
+
+    @Override
+    public Mod setParameters(@NotNull String param) {
+        if (param.length() >= 7) {
+            try {
+                return ColumnParser.updateModParameter((PassportMod) super.clone(), param);
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+        }
+        return this;
     }
 
     private static boolean isPassportCode(String text) {
-        return text.matches("[А-ЯІЇ]{2}[0-9]{6}") || text.matches("[0-9]{9}");
+        return text.matches("[А-ЯІЇЄЩҐЁ]{2}[0-9]{6}") || text.matches("[0-9]{9}");
     }
 }

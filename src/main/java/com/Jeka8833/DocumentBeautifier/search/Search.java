@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Range;
 
 import java.nio.file.Path;
 import java.util.*;
-import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 public class Search {
@@ -70,14 +70,14 @@ public class Search {
     }
 
     /**
-     * Search for elements that satisfy the comparison function. Elements with a full match will not be added.
+     * Search for elements that satisfy the comparison function.
      *
      * @param compareFunction The function that should compare two texts and return true or false
-     * @return Elements found
+     * @return Found elements
      * @throws NullPointerException If the 'compareFunction' parameter is null
      */
     @Contract("_->new")
-    public Map<String, List<DBElement>> searchIgnoreFullMatch(@NotNull BiFunction<String, String, Boolean> compareFunction) {
+    public Map<String, List<DBElement>> search(@NotNull BiPredicate<String, String> compareFunction) {
         if (database == null) return new HashMap<>();
 
         Collection<DBElement> searchedDatabase = searched.isEmpty() ? database : searched;
@@ -90,14 +90,24 @@ public class Search {
             foundRows.add(row);
 
             for (DBElement searchedRow : database) {
-                if (row.element().equals(searchedRow.element())) continue;
-
-                if (compareFunction.apply(row.element(), searchedRow.element())) foundRows.add(searchedRow);
+                if (compareFunction.test(row.element(), searchedRow.element())) foundRows.add(searchedRow);
             }
 
             if (foundRows.size() > 1) result.put(row.element(), foundRows);
         }
         return result;
+    }
+
+    /**
+     * Search for elements that satisfy the comparison function. Elements with a full match will not be added.
+     *
+     * @param compareFunction The function that should compare two texts and return true or false
+     * @return Found elements
+     * @throws NullPointerException If the 'compareFunction' parameter is null
+     */
+    @Contract("_->new")
+    public Map<String, List<DBElement>> searchIgnoreFullMatch(@NotNull BiPredicate<String, String> compareFunction) {
+        return search(compareFunction.and((s, s2) -> !s.equals(s2)));
     }
 
     /**

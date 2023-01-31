@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains/annotations
-    implementation group: 'org.jetbrains', name: 'annotations', version: '23.1.0'
+    implementation group: 'org.jetbrains', name: 'annotations', version: '24.0.0'
 
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.19.0'
@@ -34,9 +34,11 @@ dependencies {
     // https://mvnrepository.com/artifact/com.googlecode.libphonenumber/carrier
     implementation group: 'com.googlecode.libphonenumber', name: 'carrier', version: '1.+'
 
+    implementation 'com.squareup.moshi:moshi:1.14.0'
+
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
 
     // https://mvnrepository.com/artifact/info.picocli/picocli
     implementation 'info.picocli:picocli:4.7.0'

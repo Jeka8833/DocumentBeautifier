@@ -1,57 +1,62 @@
 package com.Jeka8833.DocumentBeautifier.mods;
 
-import com.Jeka8833.DocumentBeautifier.ColumnName;
+import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
+import com.Jeka8833.DocumentBeautifier.header.ColumnParser;
 import com.Jeka8833.DocumentBeautifier.util.LevenshteinDistance;
 import com.Jeka8833.DocumentBeautifier.util.Util;
 import org.apache.poi.ss.usermodel.Cell;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.stream.Stream;
 
 public class NameMod implements Mod {
-    public @Nullable ColumnName input = new ColumnName("NAME_IN", "Name");
-    public @Nullable ColumnName output = new ColumnName("NAME_OUT", "Name");
+    public @Nullable ColumnHeader input = new ColumnHeader("NAME_IN", "Name");
+    public @Nullable ColumnHeader output = new ColumnHeader("NAME_OUT", "Name");
 
     public boolean printFormattingWarning = true;
 
     @Override
-    public ColumnName[] getNeededColumn() {
-        if (input == null) return new ColumnName[0];
+    public ColumnHeader[] getNeededColumn() {
+        if (input == null) return new ColumnHeader[0];
 
         return Stream.of(input, output)
                 .filter(Objects::nonNull)
-                .map(ColumnName::clone)
-                .toArray(ColumnName[]::new);
+                .map(ColumnHeader::clone)
+                .toArray(ColumnHeader[]::new);
     }
 
     @Override
-    public void process(SheetDetailed sheet, ColumnName column, Cell cell) {
+    public void process(SheetDetailed sheet, ColumnHeader column, Cell cell) {
         if (!column.equals(input)) return;
 
-        String text = formatText(column, ExcelCell.getText(cell));
-        if (text.isEmpty()) return;
+        boolean containsOutputField = sheet.getColumnNames().contains(output);
+        if (!containsOutputField && !printFormattingWarning) return;
 
-        if (sheet.getColumnNames().contains(output)) {
-            int poxX = sheet.getColumnNames().get(output).getPosX();
-            ExcelCell.writeCell(cell.getRow(), poxX, text);
-        }
+        String text = ExcelCell.getText(cell);
+        String textFormatted = formatText(column, text);
 
-        if (printFormattingWarning) {
-            String textWithoutFormatting = ExcelCell.getText(cell);
-            if (!text.equals(textWithoutFormatting)) cell.setCellStyle(sheet.yellowColorStyle());
+        if (!text.equals(textFormatted)) {
+            if (printFormattingWarning) cell.setCellStyle(sheet.yellowColorStyle());
+
+            if (containsOutputField) {
+                int poxX = sheet.getColumnNames().get(output).getPosX();
+                ExcelCell.writeCell(cell.getRow(), poxX, textFormatted);
+            }
         }
     }
 
     @Override
-    public String formatText(ColumnName column, String text) {
+    public String formatText(ColumnHeader column, String text) {
         if (!column.equals(input)) return text;
 
-        text = Util.replaceEnglish(text.strip().replaceAll(" {2,}", " "))
+        text = Util.replaceEnglish(text)
                 .replace('3', 'з')
-                .toLowerCase();
+                .toLowerCase()
+                .replaceAll("[^а-яёіїєґщ’\\-.,\\s]+", "").strip();
 
         if (text.isEmpty()) return "";
         String[] partName = text.split("[.,\\s]+");
@@ -61,6 +66,18 @@ public class NameMod implements Mod {
                     (part.length() > 1 ? part.substring(1) : ".");
         }
         return String.join(" ", partName);
+    }
+
+    @Override
+    public Mod setParameters(@NotNull String param) {
+        if (param.length() >= 7) {
+            try {
+                return ColumnParser.updateModParameter((NameMod) super.clone(), param);
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+        }
+        return this;
     }
 
     public static boolean compareName(String name1, String name2, int mistakes) {

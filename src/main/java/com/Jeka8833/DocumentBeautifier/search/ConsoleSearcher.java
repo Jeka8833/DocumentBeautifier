@@ -1,6 +1,6 @@
 package com.Jeka8833.DocumentBeautifier.search;
 
-import com.Jeka8833.DocumentBeautifier.ColumnName;
+import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
 import com.Jeka8833.DocumentBeautifier.mods.Mod;
@@ -17,7 +17,7 @@ import java.util.Scanner;
 public class ConsoleSearcher {
     private static final Logger logger = LogManager.getLogger(ConsoleSearcher.class);
 
-    public static void start(SearchDB searchDB, ColumnName[] printingColumn, SearchFilter... filters) {
+    public static void start(SearchDB searchDB, ColumnHeader[] printingColumn, SearchFilter... filters) {
         Map<String, SearchedColumn> listMap = new HashMap<>();
         for (SearchFilter filter : filters) {
             List<DBElement> rowList = searchDB.getColumn(filter.column());
@@ -55,13 +55,13 @@ public class ConsoleSearcher {
                                 + " > " + rowData.sheet().getSheet().getSheetName() + ": ");
 
                         SheetDetailed sheet = rowData.sheet();
-                        for (ColumnName name : printingColumn) {
+                        for (ColumnHeader name : printingColumn) {
                             if (sheet.getColumnNames().contains(name)) {
-                                ColumnName used = sheet.getColumnNames().get(name);
+                                ColumnHeader used = sheet.getColumnNames().get(name);
                                 if (used.getPosX() >= 0) {
                                     Cell cell = rowData.cell().getRow().getCell(used.getPosX());
                                     if (cell != null) {
-                                        builder.append(used.getName()).append(": ")
+                                        builder.append(used.getDisplayName()).append(": ")
                                                 .append(ExcelCell.getText(cell)).append("; ");
                                     }
                                 }
@@ -77,11 +77,11 @@ public class ConsoleSearcher {
         }
     }
 
-    public record SearchFilter(String shortName, Mod formatted, ColumnName column,
+    public record SearchFilter(String shortName, Mod formatted, ColumnHeader column,
                                TriFunction<String, String, Integer, Boolean> filter) {
     }
 
-    private record SearchedColumn(List<DBElement> rowList, Mod mod, ColumnName column,
+    private record SearchedColumn(List<DBElement> rowList, Mod mod, ColumnHeader column,
                                   TriFunction<String, String, Integer, Boolean> filter) {
     }
 }

@@ -1,6 +1,6 @@
 package com.Jeka8833.DocumentBeautifier.excel;
 
-import com.Jeka8833.DocumentBeautifier.mods.Mod;
+import com.Jeka8833.DocumentBeautifier.Document;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
 
 public class ExcelReader implements AutoCloseable {
 
@@ -39,12 +38,12 @@ public class ExcelReader implements AutoCloseable {
         return sheets;
     }
 
-    public SheetDetailed[] getSheetsWithNames(Collection<Mod> mods) {
+    public SheetDetailed[] getSheetsWithNames(Document document) {
         int sheetCount = workbook.getNumberOfSheets();
         var sheets = new SheetDetailed[sheetCount];
         for (int i = 0; i < sheetCount; i++) {
             var sheetDetailed = new SheetDetailed(workbook.getSheetAt(i), this);
-            sheetDetailed.readColumnNames(mods);
+            sheetDetailed.readColumnNames(document);
 
             sheets[i] = sheetDetailed;
         }

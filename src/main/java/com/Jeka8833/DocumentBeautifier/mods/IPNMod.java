@@ -1,10 +1,12 @@
 package com.Jeka8833.DocumentBeautifier.mods;
 
-import com.Jeka8833.DocumentBeautifier.ColumnName;
+import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
+import com.Jeka8833.DocumentBeautifier.header.ColumnParser;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
@@ -16,14 +18,14 @@ import java.util.stream.Stream;
 
 public class IPNMod implements Mod {
 
-    public @Nullable ColumnName input = new ColumnName("IPN_IN", "IPN");
-    public @Nullable ColumnName output = new ColumnName("IPN_OUT", "IPN");
-    public @Nullable ColumnName dateOutput = new ColumnName("IPN_DATE_OUT", "IPN Date");
-    public @Nullable ColumnName genderOutput = new ColumnName("IPN_GENDER_OUT", "IPN Gender");
-    public @Nullable ColumnName ageOutput = new ColumnName("IPN_AGE_OUT", "IPN Age");
+    public @Nullable ColumnHeader input = new ColumnHeader("IPN_IN", "IPN");
+    public @Nullable ColumnHeader output = new ColumnHeader("IPN_OUT", "IPN");
+    public @Nullable ColumnHeader dateOutput = new ColumnHeader("IPN_DATE_OUT", "IPN Date");
+    public @Nullable ColumnHeader genderOutput = new ColumnHeader("IPN_GENDER_OUT", "IPN Gender");
+    public @Nullable ColumnHeader ageOutput = new ColumnHeader("IPN_AGE_OUT", "IPN Age");
 
-    public @Nullable LocalDate minDate = LocalDate.now().minusYears(125);
-    public @Nullable LocalDate maxDate = LocalDate.now().minusDays(1);
+    public @Nullable LocalDate minDate = LocalDate.now().minusYears(110);
+    public @Nullable LocalDate maxDate = null;
 
     public @Nullable String male = "Male";
     public @Nullable String female = "Female";
@@ -32,17 +34,17 @@ public class IPNMod implements Mod {
     public boolean printIPNError = true;
 
     @Override
-    public ColumnName[] getNeededColumn() {
-        if (input == null) return new ColumnName[]{};
+    public ColumnHeader[] getNeededColumn() {
+        if (input == null) return new ColumnHeader[]{};
 
         return Stream.of(input, output, dateOutput, genderOutput, ageOutput)
                 .filter(Objects::nonNull)
-                .map(ColumnName::clone)
-                .toArray(ColumnName[]::new);
+                .map(ColumnHeader::clone)
+                .toArray(ColumnHeader[]::new);
     }
 
     @Override
-    public void process(SheetDetailed sheet, ColumnName column, Cell cell) {
+    public void process(SheetDetailed sheet, ColumnHeader column, Cell cell) {
         if (!column.equals(input)) return;
 
         String text = formatText(column, ExcelCell.getText(cell));
@@ -99,10 +101,22 @@ public class IPNMod implements Mod {
     }
 
     @Override
-    public String formatText(ColumnName column, String text) {
+    public String formatText(ColumnHeader column, String text) {
         if (!column.equals(input)) return text;
 
         return text.replaceAll("\\D+", "");
+    }
+
+    @Override
+    public Mod setParameters(@NotNull String param) {
+        if (param.length() >= 7) {
+            try {
+                return ColumnParser.updateModParameter((IPNMod) super.clone(), param);
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+        }
+        return this;
     }
 
     public boolean isValid(String ipn) {
