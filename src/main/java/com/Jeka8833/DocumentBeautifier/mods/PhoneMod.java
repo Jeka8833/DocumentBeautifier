@@ -8,6 +8,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberToCarrierMapper;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
+import com.google.i18n.phonenumbers.geocoding.PhoneNumberOfflineGeocoder;
 import org.apache.poi.ss.usermodel.Cell;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
 public class PhoneMod implements Mod {
 
     private static final PhoneNumberUtil PHONE_UTIL = PhoneNumberUtil.getInstance();
+    private static final PhoneNumberOfflineGeocoder OFFLINE_GEOCODER = PhoneNumberOfflineGeocoder.getInstance();
     private static final PhoneNumberToCarrierMapper CARRIER_MAPPER = PhoneNumberToCarrierMapper.getInstance();
 
     public @Nullable ColumnHeader input = new ColumnHeader("PHONE_IN", "Phone");
@@ -26,12 +28,13 @@ public class PhoneMod implements Mod {
     public @Nullable ColumnHeader typeOutput = new ColumnHeader("PHONE_TYPE_OUT", "Phone type");
     public @Nullable ColumnHeader operatorOutput = new ColumnHeader("PHONE_OPERATOR_OUT", "Phone operator");
 
-    public String region = "UA";
+    public String state = "UA";
     public PhoneNumberUtil.PhoneNumberFormat numberFormat = PhoneNumberUtil.PhoneNumberFormat.NATIONAL;
 
     public boolean printFormattingWarning = true;
     public boolean printPhoneError = true;
 
+    @NotNull
     @Override
     public ColumnHeader[] getNeededColumn() {
         if (input == null) return new ColumnHeader[0];
@@ -43,13 +46,13 @@ public class PhoneMod implements Mod {
     }
 
     @Override
-    public void process(SheetDetailed sheet, ColumnHeader column, Cell cell) {
+    public void process(@NotNull SheetDetailed sheet, @NotNull ColumnHeader column, @NotNull Cell cell) {
         if (!column.equals(input)) return;
 
         String text = formatText(column, ExcelCell.getText(cell));
         if (text.isEmpty()) return;
         try {
-            Phonenumber.PhoneNumber swissNumberProto = PHONE_UTIL.parse(text, region);
+            Phonenumber.PhoneNumber swissNumberProto = PHONE_UTIL.parse(text, state);
 
             if (sheet.getColumnNames().contains(output)) {
                 int poxX = sheet.getColumnNames().get(output).getPosX();
@@ -72,28 +75,32 @@ public class PhoneMod implements Mod {
 
             if (sheet.getColumnNames().contains(operatorOutput)) {
                 int poxX = sheet.getColumnNames().get(operatorOutput).getPosX();
+                String phoneInfo = CARRIER_MAPPER.getNameForNumber(swissNumberProto, Locale.ENGLISH);
                 ExcelCell.writeCell(cell.getRow(), poxX,
-                        CARRIER_MAPPER.getNameForNumber(swissNumberProto, Locale.ENGLISH));
+                        phoneInfo.isEmpty() ?
+                                OFFLINE_GEOCODER.getDescriptionForNumber(swissNumberProto, Locale.ENGLISH) : phoneInfo);
             }
         } catch (NumberParseException ignored) {
             if (printPhoneError) cell.setCellStyle(sheet.redColorStyle());
         }
     }
 
+    @NotNull
     @Override
-    public String formatText(ColumnHeader column, String text) {
+    public String formatText(@NotNull ColumnHeader column, @NotNull String text) {
         if (!column.equals(input)) return text;
 
         text = text.replaceAll("[^0-9]+", "");
         if (text.isEmpty()) return "";
 
         try {
-            return PHONE_UTIL.format(PHONE_UTIL.parse(text, region), numberFormat);
+            return PHONE_UTIL.format(PHONE_UTIL.parse(text, state), numberFormat);
         } catch (NumberParseException ignored) {
         }
         return text;
     }
 
+    @NotNull
     @Override
     public Mod setParameters(@NotNull String param) {
         if (param.length() >= 7) {
@@ -104,5 +111,14 @@ public class PhoneMod implements Mod {
             }
         }
         return this;
+    }
+
+    @Override
+    public boolean isValid(@NotNull String text) {
+        try {
+            return PHONE_UTIL.isValidNumber(PHONE_UTIL.parse(text, state));
+        } catch (Exception ignore) {
+            return false;
+        }
     }
 }

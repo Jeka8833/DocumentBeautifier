@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class Search {
 
     private final @Nullable Collection<DBElement> database;
-    private final Set<DBElement> searched = new HashSet<>();
+    private @Nullable Set<DBElement> searched = null;
 
     public Search(@Nullable Collection<DBElement> database) {
         this.database = database;
@@ -24,12 +24,13 @@ public class Search {
      * this method does nothing.
      *
      * @param files Accepts files or folders to be searched
-     * @return This class
+     * @return This object
      * @throws NullPointerException If the 'files' parameter is null
      */
-    @Contract("_->this")
+    @Contract("_ -> this")
     public Search addSearchedFiles(@NotNull Path... files) {
         if (database == null) return this;
+        if (searched == null) searched = new HashSet<>();
 
         for (DBElement row : database) {
             for (Path path : files) {
@@ -39,6 +40,32 @@ public class Search {
                 }
             }
         }
+        return this;
+    }
+
+    /**
+     * Search for and remove a path from the files list.
+     *
+     * @param path File to be deleted
+     * @return This object
+     * @throws NullPointerException If the 'path' parameter is null
+     */
+    @Contract("_ -> this")
+    public Search removeSearchedFile(@NotNull Path path) {
+        if (searched == null) return this;
+
+        searched.removeIf(dbElement -> dbElement.sheet().getReader().getInputFile().startsWith(path));
+        return this;
+    }
+
+    /**
+     * Clear the list of searched files. After the list was cleared, all documents were searched.
+     *
+     * @return This object
+     */
+    @Contract("->this")
+    public Search clearSearchedFiles() {
+        searched = null;
         return this;
     }
 
@@ -54,7 +81,7 @@ public class Search {
 
         Map<String, List<DBElement>> result = database.stream().collect(Collectors.groupingBy(DBElement::element));
 
-        if (searched.isEmpty()) {
+        if (searched == null) {
             result.entrySet().removeIf(entry -> entry.getValue().size() < 2);
         } else {
             result.entrySet().removeIf(entry -> {
@@ -80,7 +107,7 @@ public class Search {
     public Map<String, List<DBElement>> search(@NotNull BiPredicate<String, String> compareFunction) {
         if (database == null) return new HashMap<>();
 
-        Collection<DBElement> searchedDatabase = searched.isEmpty() ? database : searched;
+        Collection<DBElement> searchedDatabase = searched == null ? database : searched;
 
         Map<String, List<DBElement>> result = new HashMap<>();
         for (DBElement row : searchedDatabase) {
@@ -115,6 +142,7 @@ public class Search {
      *
      * @return true if the constructor collection contains no elements or null
      */
+    @Contract(pure = true)
     public boolean isEmpty() {
         return database == null || database.isEmpty();
     }
@@ -125,6 +153,7 @@ public class Search {
      * @return the number of elements in the constructor collection. If the constructor collection is null,
      * 0 will be returned
      */
+    @Contract(pure = true)
     @Range(from = 0, to = Integer.MAX_VALUE)
     public int sizeDatabase() {
         if (database == null) return 0;

@@ -7,11 +7,13 @@ import org.jetbrains.annotations.NotNull;
 
 public interface Mod extends Cloneable {
 
-    ColumnHeader[] getNeededColumn();
+    @NotNull ColumnHeader[] getNeededColumn();
 
-    void process(SheetDetailed sheet, ColumnHeader column, Cell cell);
+    void process(@NotNull SheetDetailed sheet, @NotNull ColumnHeader column, @NotNull Cell cell);
 
-    String formatText(ColumnHeader column, String text);
+    @NotNull String formatText(@NotNull ColumnHeader column, @NotNull String text);
 
-    Mod setParameters(@NotNull String param);
+    @NotNull Mod setParameters(@NotNull String param);
+
+    boolean isValid(@NotNull String text);
 }

@@ -19,6 +19,7 @@ public class NameMod implements Mod {
 
     public boolean printFormattingWarning = true;
 
+    @NotNull
     @Override
     public ColumnHeader[] getNeededColumn() {
         if (input == null) return new ColumnHeader[0];
@@ -30,7 +31,7 @@ public class NameMod implements Mod {
     }
 
     @Override
-    public void process(SheetDetailed sheet, ColumnHeader column, Cell cell) {
+    public void process(@NotNull SheetDetailed sheet, @NotNull ColumnHeader column, @NotNull Cell cell) {
         if (!column.equals(input)) return;
 
         boolean containsOutputField = sheet.getColumnNames().contains(output);
@@ -49,8 +50,9 @@ public class NameMod implements Mod {
         }
     }
 
+    @NotNull
     @Override
-    public String formatText(ColumnHeader column, String text) {
+    public String formatText(@NotNull ColumnHeader column, @NotNull String text) {
         if (!column.equals(input)) return text;
 
         text = Util.replaceEnglish(text)
@@ -68,6 +70,7 @@ public class NameMod implements Mod {
         return String.join(" ", partName);
     }
 
+    @NotNull
     @Override
     public Mod setParameters(@NotNull String param) {
         if (param.length() >= 7) {
@@ -78,6 +81,11 @@ public class NameMod implements Mod {
             }
         }
         return this;
+    }
+
+    @Override
+    public boolean isValid(@NotNull String text) {
+        return true;
     }
 
     public static boolean compareName(String name1, String name2, int mistakes) {

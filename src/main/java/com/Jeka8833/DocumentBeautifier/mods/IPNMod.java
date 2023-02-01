@@ -33,6 +33,7 @@ public class IPNMod implements Mod {
     public boolean printFormattingWarning = true;
     public boolean printIPNError = true;
 
+    @NotNull
     @Override
     public ColumnHeader[] getNeededColumn() {
         if (input == null) return new ColumnHeader[]{};
@@ -44,7 +45,7 @@ public class IPNMod implements Mod {
     }
 
     @Override
-    public void process(SheetDetailed sheet, ColumnHeader column, Cell cell) {
+    public void process(@NotNull SheetDetailed sheet, @NotNull ColumnHeader column, @NotNull Cell cell) {
         if (!column.equals(input)) return;
 
         String text = formatText(column, ExcelCell.getText(cell));
@@ -100,13 +101,15 @@ public class IPNMod implements Mod {
         }
     }
 
+    @NotNull
     @Override
-    public String formatText(ColumnHeader column, String text) {
+    public String formatText(@NotNull ColumnHeader column, @NotNull String text) {
         if (!column.equals(input)) return text;
 
         return text.replaceAll("\\D+", "");
     }
 
+    @NotNull
     @Override
     public Mod setParameters(@NotNull String param) {
         if (param.length() >= 7) {
@@ -119,7 +122,8 @@ public class IPNMod implements Mod {
         return this;
     }
 
-    public boolean isValid(String ipn) {
+    @Override
+    public boolean isValid(@NotNull String ipn) {
         if (ipn.length() != 10) return false;
 
         LocalDate age = LocalDate.of(1899, 12, 31)

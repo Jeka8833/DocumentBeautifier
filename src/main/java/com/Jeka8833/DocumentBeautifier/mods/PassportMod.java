@@ -20,6 +20,7 @@ public class PassportMod implements Mod {
     public boolean printFormattingWarning = true;
     public boolean printPassportError = true;
 
+    @NotNull
     @Override
     public ColumnHeader[] getNeededColumn() {
         if (input == null) return new ColumnHeader[0];
@@ -31,7 +32,7 @@ public class PassportMod implements Mod {
     }
 
     @Override
-    public void process(SheetDetailed sheet, ColumnHeader column, Cell cell) {
+    public void process(@NotNull SheetDetailed sheet, @NotNull ColumnHeader column, @NotNull Cell cell) {
         if (!column.equals(input)) return;
 
         boolean containsOutputField = sheet.getColumnNames().contains(output);
@@ -40,7 +41,7 @@ public class PassportMod implements Mod {
         String text = ExcelCell.getText(cell);
         String textFormatted = formatText(column, text);
 
-        if (!isPassportCode(textFormatted)) {
+        if (!isValid(textFormatted)) {
             if (printPassportError)
                 cell.setCellStyle(sheet.redColorStyle());
             return;
@@ -56,13 +57,15 @@ public class PassportMod implements Mod {
         }
     }
 
+    @NotNull
     @Override
-    public String formatText(ColumnHeader column, String text) {
+    public String formatText(@NotNull ColumnHeader column, @NotNull String text) {
         if (!column.equals(input)) return text;
 
         return Util.replaceEnglish(text).toUpperCase().replaceAll("[^А-Я0-9ІЇЄЩҐЁ]+", "");
     }
 
+    @NotNull
     @Override
     public Mod setParameters(@NotNull String param) {
         if (param.length() >= 7) {
@@ -75,7 +78,8 @@ public class PassportMod implements Mod {
         return this;
     }
 
-    private static boolean isPassportCode(String text) {
+    @Override
+    public boolean isValid(@NotNull String text) {
         return text.matches("[А-ЯІЇЄЩҐЁ]{2}[0-9]{6}") || text.matches("[0-9]{9}");
     }
 }

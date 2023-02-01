@@ -34,6 +34,9 @@ dependencies {
     // https://mvnrepository.com/artifact/com.googlecode.libphonenumber/carrier
     implementation group: 'com.googlecode.libphonenumber', name: 'carrier', version: '1.+'
 
+    // https://mvnrepository.com/artifact/com.googlecode.libphonenumber/geocoder
+    implementation group: 'com.googlecode.libphonenumber', name: 'geocoder', version: '2.+'
+
     implementation 'com.squareup.moshi:moshi:1.14.0'
 
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api

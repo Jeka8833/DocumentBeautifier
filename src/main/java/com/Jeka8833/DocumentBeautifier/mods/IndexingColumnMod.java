@@ -18,20 +18,23 @@ public class IndexingColumnMod implements Mod {
         this.columnHeaders = columnHeaders;
     }
 
+    @NotNull
     @Override
     public ColumnHeader[] getNeededColumn() {
         return columnHeaders;
     }
 
     @Override
-    public void process(SheetDetailed sheet, ColumnHeader column, Cell cell) {
+    public void process(@NotNull SheetDetailed sheet, @NotNull ColumnHeader column, @NotNull Cell cell) {
     }
 
+    @NotNull
     @Override
-    public String formatText(ColumnHeader column, String text) {
+    public String formatText(@NotNull ColumnHeader column, @NotNull String text) {
         return text;
     }
 
+    @NotNull
     @Override
     public Mod setParameters(@NotNull String param) {
         if (param.length() >= 7) {
@@ -42,5 +45,10 @@ public class IndexingColumnMod implements Mod {
             }
         }
         return this;
+    }
+
+    @Override
+    public boolean isValid(@NotNull String text) {
+        return true;
     }
 }

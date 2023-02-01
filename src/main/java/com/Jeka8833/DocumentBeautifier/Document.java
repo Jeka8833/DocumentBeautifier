@@ -4,7 +4,7 @@ import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelReader;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
 import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
-import com.Jeka8833.DocumentBeautifier.header.ColumnParser;
+import com.Jeka8833.DocumentBeautifier.mods.CombineIPNPassportMod;
 import com.Jeka8833.DocumentBeautifier.mods.Mod;
 import com.Jeka8833.DocumentBeautifier.search.SearchDB;
 import com.Jeka8833.DocumentBeautifier.util.MySet;
@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 public class Document {
@@ -31,20 +33,33 @@ public class Document {
     private final List<Mod> mods = new ArrayList<>();
 
     public void processBeautifier(Path inputFile, Path outputFile) throws IOException {
+        CombineIPNPassportMod combineIPNPassportMod = mods.stream()
+                .filter(mod -> mod instanceof CombineIPNPassportMod)
+                .map(mod -> (CombineIPNPassportMod) mod)
+                .findAny().orElse(null);
+
         try (ExcelReader reader = new ExcelReader(inputFile)) {
             SheetDetailed[] sheets = reader.getSheetsWithNames(this);
             for (SheetDetailed sheet : sheets) {
                 if (!sheet.haveColumn()) continue;
 
                 MySet<ColumnHeader> columnNames = sheet.getColumnNames();
+                boolean isCombined = combineIPNPassportMod != null && columnNames.contains(combineIPNPassportMod.input);
+
                 for (Row row : sheet.getSheet()) {
                     if (sheet.getStartPosY() > row.getRowNum()) continue;
                     for (Mod mod : mods) {
+                        if (isCombined && combineIPNPassportMod.inSkipMod(mod)) continue;
+
                         for (ColumnHeader column : mod.getNeededColumn()) {
                             ColumnHeader originalColumn = columnNames.get(column);
                             if (originalColumn == null) continue;
+
+                            Cell cell = row.getCell(originalColumn.getPosX());
+                            if (cell == null) continue;
+
                             mod.setParameters(originalColumn.getModProperties())
-                                    .process(sheet, originalColumn, row.getCell(originalColumn.getPosX()));
+                                    .process(sheet, originalColumn, cell);
                         }
                     }
                 }
@@ -104,12 +119,20 @@ public class Document {
 
     public void processSearch(Path inputFile, MySet<ColumnHeader> searching, SearchDB searchDB) throws IOException {
         logger.info("Search in file: " + inputFile);
+
+        CombineIPNPassportMod combineIPNPassportMod = mods.stream()
+                .filter(mod -> mod instanceof CombineIPNPassportMod)
+                .map(mod -> (CombineIPNPassportMod) mod)
+                .findAny().orElse(null);
+
         try (ExcelReader reader = new ExcelReader(inputFile)) {
             SheetDetailed[] sheets = reader.getSheetsWithNames(this);
             for (SheetDetailed sheet : sheets) {
                 if (!sheet.haveColumn()) continue;
 
                 MySet<ColumnHeader> columnNames = sheet.getColumnNames();
+                boolean isCombined = combineIPNPassportMod != null && columnNames.contains(combineIPNPassportMod.input);
+
                 for (Row row : sheet.getSheet()) {
                     if (sheet.getStartPosY() > row.getRowNum()) continue;
 
@@ -117,9 +140,15 @@ public class Document {
                         if (!searching.contains(column)) continue;
 
                         Cell cell = row.getCell(column.getPosX());
+                        if (cell == null) continue;
+
                         String formattedText = ExcelCell.getText(cell);
                         for (Mod mod : mods) {
-                            formattedText = mod.formatText(column, formattedText);
+                            if (isCombined && combineIPNPassportMod.inSkipMod(mod)) {
+                                formattedText = combineIPNPassportMod.formatText(column, formattedText);
+                            } else {
+                                formattedText = mod.formatText(column, formattedText);
+                            }
                         }
                         if (!formattedText.isBlank()) searchDB.add(sheet, column, cell, formattedText);
                     }
