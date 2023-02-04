@@ -1,9 +1,8 @@
 package com.Jeka8833.DocumentBeautifier.mods;
 
-import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
-import com.Jeka8833.DocumentBeautifier.header.ColumnParser;
+import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.util.Util;
 import org.apache.poi.ss.usermodel.Cell;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class PassportMod implements Mod {
+public class PassportMod extends Mod {
 
     public @Nullable ColumnHeader input = new ColumnHeader("PASSPORT_IN", "Passport");
     public @Nullable ColumnHeader output = new ColumnHeader("PASSPORT_OUT", "Passport");
@@ -63,19 +62,6 @@ public class PassportMod implements Mod {
         if (!column.equals(input)) return text;
 
         return Util.replaceEnglish(text).toUpperCase().replaceAll("[^А-Я0-9ІЇЄЩҐЁ]+", "");
-    }
-
-    @NotNull
-    @Override
-    public Mod setParameters(@NotNull String param) {
-        if (param.length() >= 7) {
-            try {
-                return ColumnParser.updateModParameter((PassportMod) super.clone(), param);
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
-            }
-        }
-        return this;
     }
 
     @Override

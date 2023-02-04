@@ -17,10 +17,10 @@ import java.util.Scanner;
 public class ConsoleSearcher {
     private static final Logger logger = LogManager.getLogger(ConsoleSearcher.class);
 
-    public static void start(SearchDB searchDB, ColumnHeader[] printingColumn, SearchFilter... filters) {
+    public static void start(DocumentDatabase documentDatabase, ColumnHeader[] printingColumn, SearchFilter... filters) {
         Map<String, SearchedColumn> listMap = new HashMap<>();
         for (SearchFilter filter : filters) {
-            List<DBElement> rowList = searchDB.getColumn(filter.column());
+            List<Element> rowList = documentDatabase.getColumn(filter.column());
             if (rowList != null)
                 listMap.put(filter.shortName,
                         new SearchedColumn(rowList, filter.formatted(), filter.column(), filter.filter()));
@@ -49,7 +49,7 @@ public class ConsoleSearcher {
                 String formattedText = searchedColumn.mod().formatText(searchedColumn.column(), input[2]);
 
                 logger.info("Searching: " + formattedText + " Mistake: " + mistake);
-                for (DBElement rowData : searchedColumn.rowList()) {
+                for (Element rowData : searchedColumn.rowList()) {
                     if (searchedColumn.filter().apply(rowData.element(), formattedText, mistake)) {
                         StringBuilder builder = new StringBuilder(rowData.sheet().getReader().getInputFile()
                                 + " > " + rowData.sheet().getSheet().getSheetName() + ": ");
@@ -81,7 +81,7 @@ public class ConsoleSearcher {
                                TriFunction<String, String, Integer, Boolean> filter) {
     }
 
-    private record SearchedColumn(List<DBElement> rowList, Mod mod, ColumnHeader column,
+    private record SearchedColumn(List<Element> rowList, Mod mod, ColumnHeader column,
                                   TriFunction<String, String, Integer, Boolean> filter) {
     }
 }

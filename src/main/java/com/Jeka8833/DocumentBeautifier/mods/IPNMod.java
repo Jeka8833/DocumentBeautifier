@@ -1,9 +1,8 @@
 package com.Jeka8833.DocumentBeautifier.mods;
 
-import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
-import com.Jeka8833.DocumentBeautifier.header.ColumnParser;
+import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +15,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class IPNMod implements Mod {
+public class IPNMod extends Mod {
 
     public @Nullable ColumnHeader input = new ColumnHeader("IPN_IN", "IPN");
     public @Nullable ColumnHeader output = new ColumnHeader("IPN_OUT", "IPN");
@@ -107,19 +106,6 @@ public class IPNMod implements Mod {
         if (!column.equals(input)) return text;
 
         return text.replaceAll("\\D+", "");
-    }
-
-    @NotNull
-    @Override
-    public Mod setParameters(@NotNull String param) {
-        if (param.length() >= 7) {
-            try {
-                return ColumnParser.updateModParameter((IPNMod) super.clone(), param);
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
-            }
-        }
-        return this;
     }
 
     @Override

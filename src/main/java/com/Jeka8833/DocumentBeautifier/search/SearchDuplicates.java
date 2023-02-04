@@ -10,12 +10,12 @@ import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
-public class Search {
+public class SearchDuplicates {
 
-    private final @Nullable Collection<DBElement> database;
-    private @Nullable Set<DBElement> searched = null;
+    private final @Nullable Collection<Element> database;
+    private @Nullable Set<Element> searched = null;
 
-    public Search(@Nullable Collection<DBElement> database) {
+    public SearchDuplicates(@Nullable Collection<Element> database) {
         this.database = database;
     }
 
@@ -28,11 +28,11 @@ public class Search {
      * @throws NullPointerException If the 'files' parameter is null
      */
     @Contract("_ -> this")
-    public Search addSearchedFiles(@NotNull Path... files) {
+    public SearchDuplicates addSearchedFiles(@NotNull Path... files) {
         if (database == null) return this;
         if (searched == null) searched = new HashSet<>();
 
-        for (DBElement row : database) {
+        for (Element row : database) {
             for (Path path : files) {
                 if (row.sheet().getReader().getInputFile().startsWith(path)) {
                     searched.add(row);
@@ -51,10 +51,10 @@ public class Search {
      * @throws NullPointerException If the 'path' parameter is null
      */
     @Contract("_ -> this")
-    public Search removeSearchedFile(@NotNull Path path) {
+    public SearchDuplicates removeSearchedFile(@NotNull Path path) {
         if (searched == null) return this;
 
-        searched.removeIf(dbElement -> dbElement.sheet().getReader().getInputFile().startsWith(path));
+        searched.removeIf(element -> element.sheet().getReader().getInputFile().startsWith(path));
         return this;
     }
 
@@ -64,7 +64,7 @@ public class Search {
      * @return This object
      */
     @Contract("->this")
-    public Search clearSearchedFiles() {
+    public SearchDuplicates clearSearchedFiles() {
         searched = null;
         return this;
     }
@@ -76,10 +76,10 @@ public class Search {
      * @return Elements found
      */
     @Contract("->new")
-    public Map<String, List<DBElement>> search() {
+    public Map<String, List<Element>> search() {
         if (database == null) return new HashMap<>();
 
-        Map<String, List<DBElement>> result = database.stream().collect(Collectors.groupingBy(DBElement::element));
+        Map<String, List<Element>> result = database.stream().collect(Collectors.groupingBy(Element::element));
 
         if (searched == null) {
             result.entrySet().removeIf(entry -> entry.getValue().size() < 2);
@@ -87,7 +87,7 @@ public class Search {
             result.entrySet().removeIf(entry -> {
                 if (entry.getValue().size() < 2) return true;
 
-                for (DBElement row : entry.getValue()) {
+                for (Element row : entry.getValue()) {
                     if (searched.contains(row)) return false;
                 }
                 return true;
@@ -104,19 +104,19 @@ public class Search {
      * @throws NullPointerException If the 'compareFunction' parameter is null
      */
     @Contract("_->new")
-    public Map<String, List<DBElement>> search(@NotNull BiPredicate<String, String> compareFunction) {
+    public Map<String, List<Element>> search(@NotNull BiPredicate<String, String> compareFunction) {
         if (database == null) return new HashMap<>();
 
-        Collection<DBElement> searchedDatabase = searched == null ? database : searched;
+        Collection<Element> searchedDatabase = searched == null ? database : searched;
 
-        Map<String, List<DBElement>> result = new HashMap<>();
-        for (DBElement row : searchedDatabase) {
+        Map<String, List<Element>> result = new HashMap<>();
+        for (Element row : searchedDatabase) {
             if (result.containsKey(row.element())) continue;
 
-            List<DBElement> foundRows = new ArrayList<>();
+            List<Element> foundRows = new ArrayList<>();
             foundRows.add(row);
 
-            for (DBElement searchedRow : database) {
+            for (Element searchedRow : database) {
                 if (compareFunction.test(row.element(), searchedRow.element())) foundRows.add(searchedRow);
             }
 
@@ -133,7 +133,7 @@ public class Search {
      * @throws NullPointerException If the 'compareFunction' parameter is null
      */
     @Contract("_->new")
-    public Map<String, List<DBElement>> searchIgnoreFullMatch(@NotNull BiPredicate<String, String> compareFunction) {
+    public Map<String, List<Element>> searchIgnoreFullMatch(@NotNull BiPredicate<String, String> compareFunction) {
         return search(compareFunction.and((s, s2) -> !s.equals(s2)));
     }
 

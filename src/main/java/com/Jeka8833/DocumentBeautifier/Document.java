@@ -6,7 +6,7 @@ import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
 import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.mods.CombineIPNPassportMod;
 import com.Jeka8833.DocumentBeautifier.mods.Mod;
-import com.Jeka8833.DocumentBeautifier.search.SearchDB;
+import com.Jeka8833.DocumentBeautifier.search.DocumentDatabase;
 import com.Jeka8833.DocumentBeautifier.util.MySet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -68,17 +68,17 @@ public class Document {
         }
     }
 
-    public void processSearchFiles(List<Path> inputFiles, MySet<ColumnHeader> searching, SearchDB searchDB)
+    public void processSearchFiles(List<Path> inputFiles, MySet<ColumnHeader> searching, DocumentDatabase documentDatabase)
             throws InterruptedException {
         ExecutorService threadPool = Executors.newWorkStealingPool();
         try {
-            processSearchFiles(inputFiles, searching, searchDB, threadPool);
+            processSearchFiles(inputFiles, searching, documentDatabase, threadPool);
         } finally {
             threadPool.shutdown();
         }
     }
 
-    public void processSearchFiles(List<Path> inputFiles, MySet<ColumnHeader> searching, SearchDB searchDB,
+    public void processSearchFiles(List<Path> inputFiles, MySet<ColumnHeader> searching, DocumentDatabase documentDatabase,
                                    ExecutorService threadPool) throws InterruptedException {
         List<Callable<Void>> taskPool = new ArrayList<>();
         for (Path path : inputFiles) {
@@ -87,7 +87,7 @@ public class Document {
                     fileStream.filter(Document::checkSupportFormat)
                             .forEach(path1 -> taskPool.add(() -> {
                                 try {
-                                    processSearch(path1, searching, searchDB);
+                                    processSearch(path1, searching, documentDatabase);
                                 } catch (Exception e) {
                                     logger.warn("Fail process file" + e);
                                 }
@@ -99,7 +99,7 @@ public class Document {
             } else if (checkSupportFormat(path)) {
                 taskPool.add(() -> {
                     try {
-                        processSearch(path, searching, searchDB);
+                        processSearch(path, searching, documentDatabase);
                     } catch (Exception e) {
                         logger.warn("Fail process file" + e);
                     }
@@ -117,7 +117,7 @@ public class Document {
         return !name.startsWith("~$") && (name.endsWith(".xls") || name.endsWith(".xlsx"));
     }
 
-    public void processSearch(Path inputFile, MySet<ColumnHeader> searching, SearchDB searchDB) throws IOException {
+    public void processSearch(Path inputFile, MySet<ColumnHeader> searching, DocumentDatabase documentDatabase) throws IOException {
         logger.info("Search in file: " + inputFile);
 
         CombineIPNPassportMod combineIPNPassportMod = mods.stream()
@@ -150,7 +150,7 @@ public class Document {
                                 formattedText = mod.formatText(column, formattedText);
                             }
                         }
-                        if (!formattedText.isBlank()) searchDB.add(sheet, column, cell, formattedText);
+                        if (!formattedText.isBlank()) documentDatabase.add(sheet, column, cell, formattedText);
                     }
                 }
             }

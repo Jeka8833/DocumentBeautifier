@@ -1,9 +1,8 @@
 package com.Jeka8833.DocumentBeautifier.mods;
 
-import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
-import com.Jeka8833.DocumentBeautifier.header.ColumnParser;
+import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.util.Util;
 import org.apache.poi.ss.usermodel.Cell;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class AddressMod implements Mod {
+public class AddressMod extends Mod {
     public @Nullable ColumnHeader input = new ColumnHeader("ADDRESS_IN", "Address");
     public @Nullable ColumnHeader output = new ColumnHeader("ADDRESS_OUT", "Address");
 
@@ -88,24 +87,6 @@ public class AddressMod implements Mod {
         }
 
         return stringBuilder.toString().stripTrailing();
-    }
-
-    @NotNull
-    @Override
-    public Mod setParameters(@NotNull String param) {
-        if (param.length() >= 7) {
-            try {
-                return ColumnParser.updateModParameter((AddressMod) super.clone(), param);
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
-            }
-        }
-        return this;
-    }
-
-    @Override
-    public boolean isValid(@NotNull String text) {
-        return true;
     }
 
     private static String formatFirstPart(String text) {

@@ -1,9 +1,8 @@
 package com.Jeka8833.DocumentBeautifier.mods;
 
-import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
-import com.Jeka8833.DocumentBeautifier.header.ColumnParser;
+import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.util.LevenshteinDistance;
 import com.Jeka8833.DocumentBeautifier.util.Util;
 import org.apache.poi.ss.usermodel.Cell;
@@ -13,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class NameMod implements Mod {
+public class NameMod extends Mod {
     public @Nullable ColumnHeader input = new ColumnHeader("NAME_IN", "Name");
     public @Nullable ColumnHeader output = new ColumnHeader("NAME_OUT", "Name");
 
@@ -68,24 +67,6 @@ public class NameMod implements Mod {
                     (part.length() > 1 ? part.substring(1) : ".");
         }
         return String.join(" ", partName);
-    }
-
-    @NotNull
-    @Override
-    public Mod setParameters(@NotNull String param) {
-        if (param.length() >= 7) {
-            try {
-                return ColumnParser.updateModParameter((NameMod) super.clone(), param);
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
-            }
-        }
-        return this;
-    }
-
-    @Override
-    public boolean isValid(@NotNull String text) {
-        return true;
     }
 
     public static boolean compareName(String name1, String name2, int mistakes) {

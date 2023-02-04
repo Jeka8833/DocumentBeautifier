@@ -1,9 +1,8 @@
 package com.Jeka8833.DocumentBeautifier.mods;
 
-import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
 import com.Jeka8833.DocumentBeautifier.excel.SheetDetailed;
-import com.Jeka8833.DocumentBeautifier.header.ColumnParser;
+import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberToCarrierMapper;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -17,7 +16,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class PhoneMod implements Mod {
+public class PhoneMod extends Mod {
 
     private static final PhoneNumberUtil PHONE_UTIL = PhoneNumberUtil.getInstance();
     private static final PhoneNumberOfflineGeocoder OFFLINE_GEOCODER = PhoneNumberOfflineGeocoder.getInstance();
@@ -98,19 +97,6 @@ public class PhoneMod implements Mod {
         } catch (NumberParseException ignored) {
         }
         return text;
-    }
-
-    @NotNull
-    @Override
-    public Mod setParameters(@NotNull String param) {
-        if (param.length() >= 7) {
-            try {
-                return ColumnParser.updateModParameter((PhoneMod) super.clone(), param);
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
-            }
-        }
-        return this;
     }
 
     @Override

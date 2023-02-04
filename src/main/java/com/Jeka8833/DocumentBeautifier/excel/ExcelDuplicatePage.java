@@ -1,7 +1,7 @@
-package com.Jeka8833.DocumentBeautifier.search;
+package com.Jeka8833.DocumentBeautifier.excel;
 
 import com.Jeka8833.DocumentBeautifier.header.ColumnHeader;
-import com.Jeka8833.DocumentBeautifier.excel.ExcelCell;
+import com.Jeka8833.DocumentBeautifier.search.Element;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
@@ -47,11 +47,11 @@ public class ExcelDuplicatePage {
                     row = sheet.createRow(rowNumber++);
                     ExcelCell.writeCell(row, 0, page.name());
 
-                    for (Map.Entry<String, List<DBElement>> filterEntry : page.duplicates().entrySet()) {
+                    for (Map.Entry<String, List<Element>> filterEntry : page.duplicates().entrySet()) {
                         row = sheet.createRow(rowNumber++);
                         ExcelCell.writeCell(row, 0, filterEntry.getKey());
 
-                        for (DBElement rowData : filterEntry.getValue()) {
+                        for (Element rowData : filterEntry.getValue()) {
                             ExcelCell.writeCell(row, 1, Integer.toString(rowData.cell().getRowIndex() + 1));
                             ExcelCell.writeCell(row, 2, rowData.sheet().getSheet().getSheetName());
                             ExcelCell.writeCell(row, 3, rowData.sheet().getReader().getInputFile().toString());
@@ -82,6 +82,6 @@ public class ExcelDuplicatePage {
         filterList.get(sheetName).add(filterPage);
     }
 
-    public record FilterPage(String name, Map<String, List<DBElement>> duplicates) {
+    public record FilterPage(String name, Map<String, List<Element>> duplicates) {
     }
 }
